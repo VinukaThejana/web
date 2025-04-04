@@ -1,3 +1,5 @@
+pub mod newsletter;
+
 use axum::{
     Json,
     http::{StatusCode, header},

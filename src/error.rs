@@ -1,5 +1,12 @@
+use askama::Template;
+use axum::{
+    http::StatusCode,
+    response::{Html, IntoResponse, Response},
+};
 use std::fmt::Display;
 use validator::ValidationErrors;
+
+use crate::pages::notfound::NotFound;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
@@ -59,5 +66,22 @@ impl AppError {
         E: std::error::Error + Send + Sync + 'static,
     {
         Self::Other(anyhow::Error::new(e))
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        match self {
+            Self::NotFound(error) => (
+                StatusCode::NOT_FOUND,
+                Html(NotFound::default().render().unwrap()),
+            )
+                .into_response(),
+            Self::BadRequest(error) => todo!(),
+            Self::UniqueViolation(error) => todo!(),
+            Self::Unauthorized(error) => todo!(),
+            Self::Validation(validation_errors) => todo!(),
+            Self::Other(error) => todo!(),
+        }
     }
 }

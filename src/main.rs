@@ -2,11 +2,11 @@ use ::log::info;
 use axum::{
     Router,
     http::{Method, header},
-    routing::get,
+    routing::{get, post},
 };
 use portfolio::{
     config::{ENV, log, state::AppState},
-    handler, util,
+    handler, pages, util,
 };
 use std::time::Duration;
 use tokio::net::TcpListener;
@@ -23,7 +23,15 @@ async fn main() -> anyhow::Result<()> {
     let state = AppState::new().await;
 
     let app = Router::new()
-        .nest("/api", Router::new().route("/health", get(handler::health)))
+        .route("/", get(pages::index::render))
+        .nest(
+            "/api",
+            Router::new().route("/health", get(handler::health)).nest(
+                "/newsletter",
+                Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
+            ),
+        )
+        .nest_service("/assets", tower_http::services::ServeDir::new("assets"))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
@@ -31,13 +39,7 @@ async fn main() -> anyhow::Result<()> {
                 .layer(
                     CorsLayer::new()
                         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
-                        .allow_methods([
-                            Method::GET,
-                            Method::POST,
-                            Method::PUT,
-                            Method::DELETE,
-                            Method::OPTIONS,
-                        ])
+                        .allow_methods([Method::GET])
                         .allow_origin(Any),
                 ),
         )
