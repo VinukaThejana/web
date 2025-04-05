@@ -1,14 +1,19 @@
-use crate::{config::state::AppState, error::AppError, model::newsletter::SignUp};
+use crate::{
+    config::{ENV, state::AppState},
+    error::AppError,
+    model::newsletter::SignUp,
+};
 use askama::Template;
 use axum::{
     Form,
     extract::State,
     response::{Html, IntoResponse},
 };
+use resend_rs::types::ContactData;
 use validator::Validate;
 
 pub async fn subscribe(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Form(payload): Form<SignUp>,
 ) -> Result<impl IntoResponse, AppError> {
     #[derive(Debug, Default, Template)]
@@ -26,6 +31,17 @@ pub async fn subscribe(
     if let Err(e) = payload.validate() {
         log::info!("validation error: {:?}", AppError::Validation(e));
         return Ok(Html(Invalid::default().render().unwrap()));
+    }
+
+    let contact = ContactData::new(&payload.email).with_unsubscribed(false);
+    if let Err(e) = state
+        .rs
+        .contacts
+        .create(&ENV.resend_audience_id, contact)
+        .await
+    {
+        log::error!("error creating contact: {:?}", e);
+        return Ok(Html(Failed::default().render().unwrap()));
     }
 
     Ok(Html(Okay::default().render().unwrap()))
