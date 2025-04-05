@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}500{% endblock %}
+
+{% block head %}
+<style>
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-16 text-center">
+  <div class="mb-8">
+    <pre
+      class="inline-block text-left text-xs sm:text-sm md:text-base font-mono bg-gray-800 p-4 sm:p-6 rounded-lg overflow-x-auto text-gray-200 w-full">
+      <span class="text-blue-400">use</span> axum::{http::StatusCode, response::IntoResponse};
+      <span class="text-blue-400">use</span> tracing::{error, instrument};
+
+      <span class="text-blue-400">#[instrument]</span>
+      <span class="text-blue-400">async fn</span> <span class="text-purple-400">process_request</span>() -> <span
+        class="text-blue-400">Result</span>
+      <<span class="text-blue-400">String</span>, <span class="text-yellow-300">ServerError</span>> {
+        <span class="text-red-400">Err</span>(<span class="text-yellow-300">ServerError</span>::<span
+          class="text-green-400">Database</span>(<span class="text-green-400">"Connection refused"</span>.to_string()))
+        }
+
+        <span class="text-blue-400">async fn</span> <span class="text-purple-400">handle_error</span>(err: <span
+          class="text-yellow-300">ServerError</span>) -> <span class="text-blue-400">impl</span> IntoResponse {
+        <span class="text-purple-400">error!</span>(<span class="text-green-400">"Server error: {:?}"</span>, err);
+        (StatusCode::<span class="text-yellow-300">INTERNAL_SERVER_ERROR</span>, <span class="text-green-400">"Internal
+          server error"</span>)
+        }
+
+        <span class="text-gray-500">// thread 'server' panicked at src/handlers.rs:42</span>
+        <span class="text-red-400">Error</span>: <span class="text-yellow-300">ServerError::Database</span>(<span
+          class="text-green-400">"Connection refused"</span>)
+        <span class="text-purple-400">trace</span>: server::process_request::handle_error
+    </pre>
+  </div>
+
+  <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-white">500 - Internal Server Error</h1>
+  <p class="text-gray-400 mb-8 text-sm sm:text-base">
+    Something went wrong on our server. We're aware of the issue and are working to fix it.
+  </p>
+
+  <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+    <a href="javascript:history.back()"
+      class="px-4 py-2 sm:px-6 sm:py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md transition text-sm sm:text-base">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
+    </a>
+    <button onclick="window.location.reload()"
+      class="px-4 py-2 sm:px-6 sm:py-3 bg-green-600 hover:bg-green-500 text-white rounded-md transition text-sm sm:text-base">
+      <i class="fa-solid fa-rotate-right mr-2"></i> Try Again
+    </button>
+  </div>
+
+  <div class="text-gray-400 font-mono text-sm">
+    <p class="mb-2">// Technical details for debugging:</p>
+    <ul class="space-y-1 text-left max-w-md mx-auto">
+      <li><span class="text-green-400">Time:</span> <span id="current-time">Loading...</span></li>
+      <li><span class="text-green-400">User Agent:</span> <span id="user-agent">Loading...</span></li>
+    </ul>
+    <script>
+      document.getElementById('current-time').textContent = new Date().toISOString();
+      document.getElementById('user-agent').textContent = navigator.userAgent;
+    </script>
+  </div>
+</section>
+
+{% call super() %}
+{%endblock %}

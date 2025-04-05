@@ -6,7 +6,7 @@ use axum::{
 use std::fmt::Display;
 use validator::ValidationErrors;
 
-use crate::pages::notfound::NotFound;
+use crate::pages::{notfound::NotFound, servererror::InternalServerError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
@@ -72,16 +72,41 @@ impl AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
-            Self::NotFound(error) => (
-                StatusCode::NOT_FOUND,
-                Html(NotFound::default().render().unwrap()),
-            )
-                .into_response(),
-            Self::BadRequest(error) => todo!(),
-            Self::UniqueViolation(error) => todo!(),
-            Self::Unauthorized(error) => todo!(),
-            Self::Validation(validation_errors) => todo!(),
-            Self::Other(error) => todo!(),
+            Self::NotFound(error) => {
+                log::error!("not found error: {:?}", error);
+                (
+                    StatusCode::NOT_FOUND,
+                    Html(NotFound::default().render().unwrap()),
+                )
+                    .into_response()
+            }
+            Self::BadRequest(error) => {
+                log::error!("bad request error: {:?}", error);
+                todo!()
+            }
+            Self::UniqueViolation(error) => {
+                log::error!("unique violation error: {:?}", error);
+                todo!()
+            }
+            Self::Unauthorized(error) => {
+                log::error!("unauthorized error: {:?}", error);
+                todo!()
+            }
+            Self::Validation(validation_errors) => {
+                log::error!(
+                    "validation error: {}",
+                    AppError::Validation(validation_errors)
+                );
+                todo!()
+            }
+            Self::Other(error) => {
+                log::error!("internal server error: {:?}", error);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Html(InternalServerError::default().render().unwrap()),
+                )
+                    .into_response()
+            }
         }
     }
 }

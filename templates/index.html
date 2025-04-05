@@ -47,18 +47,22 @@
         class="flex-grow px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400"
         required>
       <button
-        hx-post="/api/newsletter/subscribe"
         hx-trigger="click"
+        hx-post="/api/newsletter/subscribe"
         hx-target="#newsletter-status"
         hx-swap="innerHTML"
+        hx-disabled-elt="this"
+        hx-indicator="#spinner"
         type="submit"
         class="px-4 py-2 bg-gray-700 hover:bg-green-400 hover:text-white rounded-md transition">
         Join
+        <i id="spinner" class="htmx-indicator fa-solid fa-spinner animate-spin hidden"></i>
       </button>
     </form>
 
     <!--newletter success or fail message-->
-    <div id="newsletter-status"></div>
+    <div id="newsletter-status">
+    </div>
   </div>
 </section>
 
