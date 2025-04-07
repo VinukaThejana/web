@@ -41,3 +41,4 @@ tokio = { version = "1.44.1", features = ["full", "macros", "rt-multi-thread"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.2", features = ["full"] }
 validator = { version = "0.20.0", features = ["derive"] }
+words-count = "0.1.6"
