@@ -15,7 +15,27 @@ pub struct Env {
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub db_url: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub db_schema: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub redis_url: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub redis_schema: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
     pub resend_api_key: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub domain: Arc<str>,
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]

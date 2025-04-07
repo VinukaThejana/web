@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse, Response},
 };
+use sea_orm::DbErr;
 use std::fmt::Display;
 use validator::ValidationErrors;
 
@@ -73,6 +74,13 @@ impl AppError {
         E: std::error::Error + Send + Sync + 'static,
     {
         Self::NotFound(anyhow::Error::new(e))
+    }
+
+    pub fn from_database_error(e: DbErr) -> Self {
+        match e {
+            DbErr::RecordNotFound(e) => Self::NotFound(anyhow::anyhow!(e)),
+            _ => Self::Other(anyhow::anyhow!(e)),
+        }
     }
 }
 
