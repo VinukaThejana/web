@@ -1,3 +1,4 @@
+pub mod parser;
 pub mod verify;
 
 use crate::config::state::AppState;
@@ -5,6 +6,11 @@ use base64::prelude::*;
 use serde::{Deserialize, Deserializer};
 use std::sync::Arc;
 use tokio::signal;
+
+pub const AUTHOR: &str = "Vinuka Kodituwakku";
+pub const AUTHOR_EMAIL: &str = "vinuka.t@icloud.com";
+pub const AUTHOR_GITHUB: &str = "https://github.com/VinukaThejana";
+pub const AUTHOR_TWITTER: &str = "https://x.com/VinukaThejana";
 
 pub async fn shutdown(state: AppState) {
     let ctrl_c = async {

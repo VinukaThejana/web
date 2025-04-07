@@ -10,6 +10,7 @@ pub struct Model {
     pub title: String,
     #[sea_orm(unique)]
     pub slug: String,
+    pub photo_url: String,
     pub tags: String,
     #[sea_orm(column_type = "Text")]
     pub summary: String,

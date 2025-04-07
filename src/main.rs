@@ -24,6 +24,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(pages::index::render))
+        .route("/posts/{slug}", get(pages::post::render))
         .fallback(pages::notfound::render)
         .nest(
             "/api",
