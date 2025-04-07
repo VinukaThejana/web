@@ -67,6 +67,13 @@ impl AppError {
     {
         Self::Other(anyhow::Error::new(e))
     }
+
+    pub fn from_not_found_error<E>(e: E) -> Self
+    where
+        E: std::error::Error + Send + Sync + 'static,
+    {
+        Self::NotFound(anyhow::Error::new(e))
+    }
 }
 
 impl IntoResponse for AppError {

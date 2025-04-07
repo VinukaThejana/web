@@ -5,20 +5,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ title }} | Vinuka Kodituwakku {% endblock %}</title>
-
   <script src="/assets/js/tailwind.min.js"></script>
+
   <script src="https://unpkg.com/htmx.org@2.0.4"
     integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
     crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
   <style type="text/tailwindcss">
     html {
-      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     }
   </style>
-
   {% block head %}{% endblock %}
 </head>
 
@@ -36,17 +39,18 @@
 
     {% block content %}
     {% endblock %}
+  </div>
 
-    <!-- Footer -->
-    <footer class="py-8 text-center text-sm text-gray-400">
-      <div class="mb-2">
-        <a href="#" class="hover:text-green-400 transition mx-2">Newsletters</a>
-        <a href="#" class="hover:text-green-400 transition mx-2">Consulting</a>
-      </div>
-      <div>
-        © 2025 <a href="#" class="hover:text-green-400 transition">Vinuka Kodituwakku</a>. All rights reserved.
-      </div>
-    </footer>
+  <!-- Footer -->
+  <footer class="py-8 text-center text-sm text-gray-400">
+    <div class="mb-2">
+      <a href="#" class="hover:text-green-400 transition mx-2"></a>
+    </div>
+    <div>
+      © 2025 <a href="#" class="hover:text-green-400 transition">Vinuka Kodituwakku</a>. All rights reserved.
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
 </body>
-
 </html>
