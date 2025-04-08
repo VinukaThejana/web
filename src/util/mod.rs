@@ -10,7 +10,7 @@ use tokio::signal;
 pub const AUTHOR: &str = "Vinuka Kodituwakku";
 pub const AUTHOR_EMAIL: &str = "vinuka.t@icloud.com";
 pub const AUTHOR_GITHUB: &str = "https://github.com/VinukaThejana";
-pub const AUTHOR_TWITTER: &str = "https://x.com/VinukaThejana";
+pub const AUTHOR_TWITTER: &str = "@VinukaThejana";
 
 pub async fn shutdown(state: AppState) {
     let ctrl_c = async {
