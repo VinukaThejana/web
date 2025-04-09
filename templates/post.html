@@ -3,13 +3,11 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block head %}
-<!-- Essential Meta Tags -->
 <meta name="description" content="{{ summary }}">
 <meta name="keywords" content="{{ keywords }}">
 <meta name="author" content="{{ crate::util::AUTHOR }}">
 <meta name="robots" content="index, follow">
 
-<!-- Open Graph / Facebook -->
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ summary }}">
@@ -17,7 +15,6 @@
 <meta property="og:url" content="{{ url }}">
 <meta property="og:site_name" content="{{ crate::util::AUTHOR }}">
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ title }}">
 <meta name="twitter:description" content="{{ summary }}">
@@ -54,170 +51,169 @@
 }
 </script>
 
-<style>
-  .prose h1 {
-    font-size: 2.25rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
-    background: linear-gradient(to right, #f9fafb, #34d399); /* gray-50 to green-400 */
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: -0.025em;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    position: relative;
-    padding-bottom: 0.25rem;
-  }
-  .prose h1::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 4rem;
-    height: 2px;
-    background-color: #10b981; /* green-500 */
-    transition: width 0.3s ease-in-out;
-  }
-  .prose h1:hover::after {
-    width: 6rem;
-  }
-  .prose h2 {
-    font-size: 1.875rem;
-    margin-bottom: 0.875rem;
-    font-weight: 600;
-    color: #e5e7eb; /* gray-200 */
-    position: relative;
-    padding-left: 0.5rem;
-    border-left: 4px solid #34d399; /* green-400 */
-    transition: color 0.2s ease-in-out;
-  }
-  .prose h2:hover {
-    color: #f9fafb; /* gray-50 */
-  }
-  .prose h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    color: #d1d5db; /* gray-300 */
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    position: relative;
-  }
-  .prose h3::before {
-    content: '— ';
-    color: #10b981; /* green-500 */
-  }
-
-  /* Paragraphs, Links, Lists, Blockquotes */
-  .prose p {
-    margin-bottom: 1.25rem;
-    color: #d1d5db; /* gray-300 */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  .prose a {
-    color: #34d399; /* green-400 */
-    text-decoration: none;
-    transition: color 0.2s ease-in-out;
-  }
-  .prose a:hover {
-    color: #10b981; /* green-500 */
-    text-decoration: underline;
-  }
-  .prose ul, .prose ol {
-    margin-bottom: 1.25rem;
-    padding-left: 1.5rem;
-    color: #d1d5db;
-  }
-  .prose ul li, .prose ol li {
-    margin-bottom: 0.5rem;
-  }
-  .prose ul {
-    list-style-type: disc;
-  }
-  .prose ol {
-    list-style-type: decimal;
-  }
-
-  .prose blockquote {
-    margin: 1.25rem 0;
-    padding: 1rem 1.5rem;
-    background-color: #1f2937; /* gray-800 */
-    border-left: 4px solid #34d399; /* green-400 */
-    color: #d1d5db;
-    font-style: italic;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .prose pre {
-    background-color: #1f2937; /* gray-800 */
-    color: #d1d5db; /* gray-300, default for non-highlighted */
-    padding: 1rem;
-    border-radius: 0.375rem;
-    overflow-x: auto;
-    margin-bottom: 1.25rem;
-    border: 1px solid #374151; /* gray-700 */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-    font-family: 'Courier New', Courier, monospace;
-    line-height: 1.5;
-  }
-
-  .prose code:not(pre code) {
-    color: #34d399; /* green-400 for inline code */
-    font-family: 'Courier New', Courier, monospace;
-    white-space: nowrap; /* Prevents word breaking */
-    display: inline-block; /* Moves to new line if it doesn't fit */
-  }
-
-  .prose table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1.25rem;
-    background-color: #1f2937; /* gray-800 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  .prose th, .prose td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #374151; /* gray-700 */
-    color: #d1d5db;
-  }
-  .prose th {
-    background-color: #374151; /* gray-700 */
-    font-weight: 600;
-    color: #f9fafb;
-  }
-  .prose td {
-    background-color: #1f2937;
-  }
-  .prose tr:nth-child(even) td {
-    background-color: #2d3748; /* gray-700 */
-  }
-  .prose tr:hover td {
-    background-color: #10b981; /* green-500 */
-    color: #111827;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  }
-  .prose * {
-    max-width: 100%;
-    word-break: break-all;
-  }
-</style>
-
-<link rel="stylesheet" href="/assets/css/dracula.css">
+<link rel="stylesheet" href="/assets/css/post.min.css">
+<link rel="stylesheet" href="/assets/css/dracula.min.css">
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl prose prose-lg min-h-screen">
-  {{ content | safe }}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="content-wrapper">
+    <div class="main-content prose prose-lg min-h-screen">
+      <div class="article-metadata">
+        <span class="article-date">{{ date }}</span>
+      </div>
+
+      {{ content | safe }}
+    </div>
+    
+    <div class="toc-container" id="toc">
+      <div class="toc-title">
+        Contents
+      </div>
+      <ul class="toc-list" id="toc-list">
+      </ul>
+    </div>
+  </div>
 </div>
 
 {% call super() %}
-{%endblock %}
+{% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
-<script>hljs.highlightAll();</script>
+<script src="/assets/js/highlight/highlight.min.js"></script>
+<script src="/assets/js/highlight/languages/go.min.js"></script>
+<script src="/assets/js/highlight/languages/rust.min.js"></script>
+<script src="/assets/js/highlight/languages/protobuf.min.js"></script>
+<script src="/assets/js/highlight/languages/bash.min.js"></script>
+<script src="/assets/js/highlight/languages/typescript.min.js"></script>
+<script>
+  hljs.highlightAll();
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const tocList = document.getElementById('toc-list');
+    const headings = document.querySelectorAll('.prose h2, .prose h3');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (headings.length === 0 || !tocList) return;
+    
+    headings.forEach((heading, index) => {
+      if (!heading.id) {
+        const headingText = heading.textContent.trim();
+        heading.id = headingText
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-');
+        heading.id += `-${index}`;
+      }
+      
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = `#${heading.id}`;
+      link.textContent = heading.textContent.trim();
+      link.setAttribute('data-heading-id', heading.id);
+      
+      if (heading.tagName.toLowerCase() === 'h3') {
+        link.classList.add('toc-h3');
+      }
+      
+      listItem.appendChild(link);
+      tocList.appendChild(listItem);
+    });
+    
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    
+    const highlightTocOnScroll = () => {
+      const scrollPos = window.scrollY + 100;
+      let currentHeadingId = null;
+      
+      headings.forEach(heading => {
+        const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+        
+        if (headingTop <= scrollPos) {
+          currentHeadingId = heading.id;
+        }
+      });
+      
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+      });
+      
+      if (currentHeadingId) {
+        const activeLink = document.querySelector(`.toc-list a[data-heading-id="${currentHeadingId}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+    };
+    
+    tocLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 20,
+            behavior: 'smooth'
+          });
+          
+          history.pushState(null, null, `#${targetId}`);
+          
+          tocLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    });
+    
+    window.addEventListener('scroll', highlightTocOnScroll);
+    
+    highlightTocOnScroll();
+    
+    const codeBlocks = document.querySelectorAll('pre code');
+    
+    codeBlocks.forEach((codeBlock, index) => {
+      const pre = codeBlock.parentElement;
+      
+      const copyButton = document.createElement('button');
+      copyButton.className = 'copy-button';
+      copyButton.setAttribute('aria-label', 'Copy code');
+      copyButton.setAttribute('data-index', index);
+      
+      copyButton.innerHTML = `
+        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Copy</span>
+      `;
+      
+      pre.appendChild(copyButton);
+      
+      copyButton.addEventListener('click', () => {
+        const code = codeBlock.textContent;
+        
+        navigator.clipboard.writeText(code).then(() => {
+          copyButton.classList.add('copied');
+          copyButton.querySelector('span').textContent = 'Copied!';
+          
+          setTimeout(() => {
+            copyButton.classList.remove('copied');
+            copyButton.querySelector('span').textContent = 'Copy';
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy code: ', err);
+          copyButton.querySelector('span').textContent = 'Failed';
+          
+          setTimeout(() => {
+            copyButton.querySelector('span').textContent = 'Copy';
+          }, 2000);
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}
