@@ -141,7 +141,7 @@ pub async fn render(
     }
 
     let markdown = markdown.unwrap();
-    let post = database::post::get(&state.db, &slug)
+    let post = database::post::get_by_slug(&state.db, &slug)
         .await
         .map_err(AppError::from_database_error)?;
     let datetime = DateTime::<Utc>::from_timestamp(post.date.into(), 0).unwrap();

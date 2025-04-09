@@ -1,0 +1,49 @@
+use crate::{
+    config::state::AppState,
+    database,
+    error::AppError,
+    model::post::{Post, ToPosts},
+    util,
+};
+use askama::Template;
+use axum::{
+    Form,
+    extract::State,
+    response::{Html, IntoResponse},
+};
+use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+#[derive(Default, Debug, Template)]
+#[template(path = "components/article/load-more.html")]
+pub struct LoadMore {
+    pub posts: Vec<Post>,
+    pub next_page: usize,
+    pub has_more: bool,
+}
+
+#[derive(Serialize, Deserialize, Validate)]
+pub struct Payload {
+    #[validate(range(min = 1))]
+    pub page: usize,
+}
+
+pub async fn load_more(
+    State(state): State<AppState>,
+    Form(payload): Form<Payload>,
+) -> Result<impl IntoResponse, AppError> {
+    let page = payload.validate().map(|_| payload.page).unwrap_or(1);
+    let mut load_more = LoadMore::default();
+
+    let mut posts = database::post::get_by_page(&state.db, page)
+        .await
+        .unwrap_or(vec![])
+        .to_posts();
+
+    load_more.next_page = page + 1;
+    load_more.has_more = posts.len() > util::POST_LIMIT;
+    posts.pop();
+    load_more.posts = posts;
+
+    Ok(Html(load_more.render().unwrap()))
+}

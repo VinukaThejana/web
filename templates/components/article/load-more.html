@@ -1,0 +1,16 @@
+{% for post in posts %}
+{% include "components/article/index.html" %}
+{% endfor %}
+
+<section id="load-more"></section>
+
+<script>
+  (function () {
+    const btn = document.getElementById('load-more-button');
+    {% if has_more %}
+    document.querySelector('#current-page').value = "{{ next_page }}";
+    {% else %}
+    btn.style.display = 'none';
+    {% endif %}
+  })();
+</script>

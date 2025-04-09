@@ -1,4 +1,5 @@
 pub mod newsletter;
+pub mod posts;
 
 use axum::{
     Json,

@@ -30,8 +30,17 @@ async fn main() -> anyhow::Result<()> {
         .nest(
             "/api",
             Router::new().route("/health", get(handler::health)).nest(
-                "/newsletter",
-                Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
+                "/components",
+                Router::new()
+                    .nest(
+                        "/newsletter",
+                        Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
+                    )
+                    .nest(
+                        "/posts",
+                        Router::new()
+                            .route("/home/load-more", post(handler::posts::home::load_more)),
+                    ),
             ),
         )
         .nest_service("/assets", tower_http::services::ServeDir::new("assets"))

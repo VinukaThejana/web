@@ -1,7 +1,6 @@
 .prose h2,
 .prose h3 {
-  scroll-margin-top: 2rem;
-  position: relative
+  scroll-margin-top: 2rem
 }
 
 .prose a,
@@ -315,14 +314,14 @@
     position: relative;
     padding-top: 3rem;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto
   }
 
   .main-content {
     max-width: 650px;
     padding-top: 0;
     margin: 0 auto;
-    width: 100%;
+    width: 100%
   }
 
   .toc-container {
@@ -388,11 +387,11 @@
 
 @media (min-width:1280px) {
   .content-wrapper {
-    max-width: 1300px;
+    max-width: 1300px
   }
 
   .main-content {
-    max-width: 680px;
+    max-width: 680px
   }
 }
 
@@ -403,11 +402,11 @@
 
   .content-wrapper {
     max-width: 1500px;
-    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-columns: minmax(0, 1fr) 280px
   }
 
   .main-content {
-    max-width: 700px;
+    max-width: 700px
   }
 
   .toc-container {

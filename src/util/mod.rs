@@ -3,14 +3,30 @@ pub mod verify;
 
 use crate::config::state::AppState;
 use base64::prelude::*;
+use phf::phf_map;
 use serde::{Deserialize, Deserializer};
 use std::sync::Arc;
 use tokio::signal;
+
+pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
+    "github" => "https://github.com/VinukaThejana",
+    "git" => "https://github.com/VinukaThejana",
+    "linkedin" => "https://www.linkedin.com/in/vinukakodituwakku/",
+    "in" => "https://www.linkedin.com/in/vinukakodituwakku/",
+    "twitter" => "https://twitter.com/VinukaThejana",
+    "x" => "https://twitter.com/VinukaThejana",
+    "instagram" => "https://www.instagram.com/vinukathejana/",
+    "ig" => "https://www.instagram.com/vinukathejana/",
+    "facebook" => "https://www.facebook.com/vinukakodituwakku",
+    "fb" => "https://www.facebook.com/vinukakodituwakku",
+};
 
 pub const AUTHOR: &str = "Vinuka Kodituwakku";
 pub const AUTHOR_EMAIL: &str = "vinuka.t@icloud.com";
 pub const AUTHOR_GITHUB: &str = "https://github.com/VinukaThejana";
 pub const AUTHOR_TWITTER: &str = "@VinukaThejana";
+
+pub const POST_LIMIT: usize = 10;
 
 pub async fn shutdown(state: AppState) {
     let ctrl_c = async {
