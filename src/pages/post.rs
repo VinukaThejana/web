@@ -73,7 +73,6 @@ impl PostCache {
         if self.title.is_empty() && self.content.is_empty() {
             return NON_EXISTENT_POST.to_string();
         }
-
         serde_json::to_string(self).unwrap_or(NON_EXISTENT_POST.to_string())
     }
 }
@@ -96,7 +95,7 @@ pub async fn render(
             )));
         }
 
-        log::info!("cache hit for post: {}", slug);
+        log::info!("cache hit");
         let post_cache = PostCache::from_cache(&content);
         let post = Post {
             title: &post_cache.title,
@@ -111,7 +110,7 @@ pub async fn render(
         return Ok(Html(post.render().unwrap()));
     }
 
-    log::info!("cache miss for post: {}", slug);
+    log::info!("cache miss");
 
     let markdown = fs::read_to_string(format!("{}/{}.md", POSTS_DIR, slug));
     if let Err(e) = markdown {
@@ -131,9 +130,9 @@ pub async fn render(
                 .query_async(&mut conn)
                 .await;
             if let Err(e) = result {
-                log::error!("failed to set redis not found key: {:?}", e);
+                log::error!("cache failed : {:?}", e);
             }
-            log::info!("added non-existent post to cache: {}", slug);
+            log::info!("cache set");
         });
 
         log::error!("post not found: {:?}", e);
@@ -178,9 +177,9 @@ pub async fn render(
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
-            log::error!("failed to set redis not found key: {:?}", e);
+            log::error!("cache failed: {:?}", e);
         }
-        log::info!("added post to cache: {}", slug);
+        log::info!("cache set");
     });
 
     let post = Post {

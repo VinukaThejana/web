@@ -3,7 +3,7 @@ use crate::{
     database,
     error::AppError,
     model::post::{Post, ToPosts},
-    util::{self, SOCIALS},
+    util::{self, SOCIALS, from_cache, to_cache},
 };
 use askama::Template;
 use axum::{
@@ -63,12 +63,6 @@ impl Index {
 fn get_cache_key() -> String {
     format!("{}:latest_posts", &ENV.redis_schema)
 }
-fn to_cache(posts: &Vec<Post>) -> String {
-    serde_json::to_string(&posts).unwrap_or("[]".to_string())
-}
-fn from_cache(payload: &str) -> Vec<Post> {
-    serde_json::from_str(payload).unwrap_or(vec![])
-}
 
 pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
@@ -83,12 +77,12 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         .await
         .unwrap_or(None);
     if let Some(payload) = payload {
-        log::info!("cache hit for latest posts");
+        log::info!("cache hit");
         let posts = from_cache(&payload);
         return Ok(Html(Index::new(posts).await.render().unwrap()));
     }
 
-    log::info!("cache miss for latest posts");
+    log::info!("cache miss");
     let posts = database::post::get(&state.db)
         .await
         .unwrap_or(vec![])
@@ -111,10 +105,10 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
-            log::error!("failed to set cache : {:?}", e);
+            log::error!("cache failed : {:?}", e);
             return;
         }
-        log::info!("cache set for latest posts");
+        log::info!("cache set");
     });
 
     Ok(Html(Index::new(posts).await.render().unwrap()))

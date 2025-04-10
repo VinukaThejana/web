@@ -12,22 +12,22 @@ use axum::{
 use resend_rs::types::ContactData;
 use validator::Validate;
 
+#[derive(Debug, Default, Template)]
+#[template(path = "components/newsletter/status-failed.html")]
+struct Failed {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/newsletter/status-success.html")]
+struct Okay {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/newsletter/status-email-invalid.html")]
+struct Invalid {}
+
 pub async fn subscribe(
     State(state): State<AppState>,
     Form(payload): Form<SignUp>,
 ) -> Result<impl IntoResponse, AppError> {
-    #[derive(Debug, Default, Template)]
-    #[template(path = "components/newsletter/status-failed.html")]
-    struct Failed {}
-
-    #[derive(Debug, Default, Template)]
-    #[template(path = "components/newsletter/status-success.html")]
-    struct Okay {}
-
-    #[derive(Debug, Default, Template)]
-    #[template(path = "components/newsletter/status-email-invalid.html")]
-    struct Invalid {}
-
     if let Err(e) = payload.validate() {
         log::info!("validation error: {:?}", AppError::Validation(e));
         return Ok(Html(Invalid::default().render().unwrap()));
