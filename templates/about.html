@@ -1,0 +1,416 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% set title="About" %}
+{% include "components/seo/seo.html" %}
+{% endblock %}
+
+{% block content %}
+<!-- About Header -->
+<header class="py-16 text-center">
+  <div class="mb-8 flex justify-center">
+    <div class="w-40 h-40 rounded-full overflow-hidden bg-gray-800 border-4 border-gray-700">
+      <img src="/assets/images/profile.jpg" alt="Profile Photo" class="w-full h-full object-cover grayscale">
+    </div>
+  </div>
+  <h1 class="text-4xl font-bold mb-4">Hi, I'm Vinuka Kodituwakku</h1>
+  <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+    Backend developer specializing in building scalable, secure systems and sharing knowledge to support others
+  </p>
+</header>
+
+<!-- About Content -->
+<main class="py-8">
+  <!-- Bio Section -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">About Me</h2>
+    <div class="space-y-4 text-gray-400">
+      <p>
+        I'm a backend developer from Sri Lanka with a passion for building and scaling systems that are fast, reliable,
+        and easy to maintain. I love the problem-solving side of backend work—figuring out how everything fits together
+        behind the scenes.
+      </p>
+      <p>
+        Rust is my go-to language because it gives me both performance and peace of mind with its safety guarantees. I
+        live in Neovim and rely on Docker to make development and deployment smoother. Over time, I’ve realized that
+        some of the most valuable lessons come from mistakes—so I blog about the things I’ve had to figure out the hard
+        way, hoping to help others avoid the same pitfalls.
+      </p>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Technical Skills</h2>
+
+    <!-- Primary Skills -->
+    <div class="mb-8">
+      <h3 class="text-xl font-semibold mb-4">Core Expertise</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-diagram-project text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">System Design</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Planning out complex setups that grow without breaking. Designing scalable and maintainable system
+            architectures.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-microchip text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">System Architecture</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Tying microservices together for smooth scaling. Creating robust distributed systems that communicate
+            efficiently.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-brands fa-docker text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Containerization</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Packaging systems for easy, flexible deployment. Expertise in Docker and container orchestration.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-arrow-up-right-dots text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Scalable Deployment</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Rolling out tech that handles more users seamlessly. Building systems that scale horizontally and
+            vertically.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Skills -->
+    <div class="mb-8">
+      <h3 class="text-xl font-semibold mb-4">Specialized Skills</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-stream text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Streaming</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Pushing real-time data to users fast and steadily. Experience with Kafka, RabbitMQ, and other message
+            brokers.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-lock text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Authentication</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Securing user logins with top-notch protection. Implementing OAuth, JWT, and other secure authentication
+            methods.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-database text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Relational Data Modeling</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Shaping data for fast, accurate performance. Designing efficient database schemas and query
+            optimization.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-server text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Load Balancing</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Spreading traffic so systems stay quick under pressure. Implementing efficient traffic distribution
+            strategies.
+          </p>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg col-span-1 md:col-span-2">
+          <div class="flex items-center mb-2">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-700 rounded-lg mr-3">
+              <i class="fa-solid fa-code text-green-400 text-xl"></i>
+            </div>
+            <h4 class="font-bold">Web Backend Development</h4>
+          </div>
+          <p class="text-sm text-gray-400">
+            Building CRUD backends for web apps that work flawlessly. Creating RESTful APIs and GraphQL endpoints
+            that power modern web applications.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Programming Languages -->
+    <div class="mb-8">
+      <h3 class="text-xl font-semibold mb-4">Programming Languages</h3>
+      <div class="flex flex-wrap gap-3">
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-rust text-green-400 mr-2"></i>
+          <span>Rust</span>
+        </div>
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-golang text-green-400 mr-2"></i>
+          <span>GoLang</span>
+        </div>
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-js text-green-400 mr-2"></i>
+          <span>TypeScript/JavaScript</span>
+        </div>
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-python text-green-400 mr-2"></i>
+          <span>Python</span>
+        </div>
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-java text-green-400 mr-2"></i>
+          <span>Java</span>
+        </div>
+        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center">
+          <i class="fa-brands fa-php text-green-400 mr-2"></i>
+          <span>PHP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cloud Services -->
+    <div>
+      <h3 class="text-xl font-semibold mb-4">Cloud Services</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-lg mr-2">
+              <i class="fa-brands fa-aws text-green-400"></i>
+            </div>
+            <h4 class="font-bold">AWS</h4>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">Lambda</span>
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">S3</span>
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">ECS</span>
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">EC2</span>
+          </div>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-lg mr-2">
+              <i class="fa-solid fa-cloud text-green-400"></i>
+            </div>
+            <h4 class="font-bold">GCP</h4>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">Storage</span>
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">Cloud Run</span>
+          </div>
+        </div>
+
+        <div class="p-4 bg-gray-800 rounded-lg">
+          <div class="flex items-center mb-2">
+            <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-lg mr-2">
+              <i class="fa-brands fa-digital-ocean text-green-400"></i>
+            </div>
+            <h4 class="font-bold">DigitalOcean</h4>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">Droplets</span>
+            <span class="px-2 py-1 bg-gray-700 rounded text-xs">Kubernetes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Projects Section -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Key Projects</h2>
+
+    <div class="space-y-6">
+      {% for project in projects %}
+      {% include "components/project.html" %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Experience Timeline -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Experience</h2>
+
+    <div class="relative border-l-2 border-gray-800 pl-8 ml-4">
+      <!-- Current Position -->
+      <div class="mb-10 relative">
+        <div class="absolute -left-10 mt-1.5 w-6 h-6 rounded-full bg-green-400 flex items-center justify-center">
+          <div class="w-3 h-3 bg-white rounded-full"></div>
+        </div>
+        <div class="mb-1 flex flex-col sm:flex-row sm:items-center">
+          <h3 class="text-xl font-bold">Freelance Backend Developer</h3>
+          <span class="sm:ml-auto text-sm text-gray-400">2025 - *</span>
+        </div>
+        <p class="text-sm text-gray-400 mb-2">Remote | Onsite</p>
+        <p class="text-gray-400">
+          Working with startups and established companies to build scalable backend systems and APIs.
+          Specializing in Go and Rust development for high-performance applications.
+        </p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Go</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Rust</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">AWS</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Kubernetes</span>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="absolute -left-10 mt-1.5 w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
+          <div class="w-3 h-3 bg-white rounded-full"></div>
+        </div>
+        <div class="mb-1 flex flex-col sm:flex-row sm:items-center">
+          <h3 class="text-xl font-bold">Backend Developer</h3>
+          <span class="sm:ml-auto text-sm text-gray-400">2024 - 2025</span>
+        </div>
+        <p class="text-sm text-gray-400 mb-2">Flitlabs</p>
+        <p class="text-gray-400">
+          Crafted real-time location tracking applications that brought precision and immediacy to user experiences,
+          while deploying and maintaining robust backend infrastructure critical to seamless operations. Played a key
+          role in scaling numerous microservices to handle growing demands, designed efficient databases, and
+          implemented APIs that powered smooth, reliable functionality.
+        </p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Go</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Typescript</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Python</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">Kafka</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">rdbms</span>
+          <span class="px-2 py-1 bg-gray-700 rounded text-xs">AWS</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education Section -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Education</h2>
+
+    <div class="mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center mb-1">
+        <h3 class="text-xl font-bold">Bsc(Hons) Computer Science</h3>
+        <span class="sm:ml-auto text-sm text-gray-400">2022 - 2026</span>
+      </div>
+      <p class="text-gray-400">
+        NSBM Green University, Colombo, Sri Lanka
+      </p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section>
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Get in Touch</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <p class="text-gray-400 mb-6">
+          I'm always open to discussing new projects, opportunities, or partnerships.
+          Feel free to reach out through any of the channels below.
+        </p>
+
+        <div class="space-y-4">
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full mr-4">
+              <i class="fa-solid fa-envelope text-green-400"></i>
+            </div>
+            <a href="mailto:vinuka.t@icloud.com" class="text-gray-400 hover:text-green-400 transition">
+              vinuka.t@icloud.com
+            </a>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full mr-4">
+              <i class="fa-brands fa-github text-green-400"></i>
+            </div>
+            <a href="https://vinuka.dev/github" target="_blank" rel="noopener noreferrer"
+              class="text-gray-400 hover:text-green-400 transition">
+              github.com/VinukaThejana
+            </a>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full mr-4">
+              <i class="fa-brands fa-linkedin text-green-400"></i>
+            </div>
+            <a href="https://vinuka.dev/in" target="_blank" rel="noopener noreferrer"
+              class="text-gray-400 hover:text-green-400 transition">
+              linkedin.com/in/vinukakodituwakku
+            </a>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full mr-4">
+              <i class="fa-brands fa-twitter text-green-400"></i>
+            </div>
+            <a href="https://vinuka.dev/x" target="_blank" rel="noopener noreferrer"
+              class="text-gray-400 hover:text-green-400 transition">
+              @VinukaThejana
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 bg-gray-800 rounded-lg">
+        <h3 class="text-xl font-bold mb-4">Quick Message</h3>
+        <form>
+          <div class="mb-4">
+            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Name</label>
+            <input type="text" id="name"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400">
+          </div>
+
+          <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+            <input type="email" id="email"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400">
+          </div>
+
+          <div class="mb-4">
+            <label for="message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+            <textarea id="message" rows="4"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400"></textarea>
+          </div>
+
+          <button type="submit"
+            class="w-full px-4 py-2 bg-green-400 text-gray-900 font-medium rounded-md hover:bg-green-500 transition">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

@@ -25,6 +25,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(pages::index::render))
+        .route("/about", get(pages::about::render))
         .route("/{social}", get(pages::social::render))
         .route("/posts/{slug}", get(pages::post::render))
         .fallback(pages::notfound::render)

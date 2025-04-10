@@ -82,3 +82,17 @@ where
     let s: String = String::deserialize(deserializer)?;
     Ok(s.into())
 }
+
+pub fn to_cache<T>(item: &T) -> String
+where
+    T: serde::Serialize,
+{
+    serde_json::to_string(item).unwrap_or_else(|_| String::from("[]"))
+}
+
+pub fn from_cache<T>(payload: &str) -> T
+where
+    T: serde::de::DeserializeOwned + Default,
+{
+    serde_json::from_str(payload).unwrap_or_else(|_| T::default())
+}
