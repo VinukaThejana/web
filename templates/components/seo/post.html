@@ -1,0 +1,49 @@
+<title>{{ title }}</title>
+
+<meta name="description" content="{{ summary }}">
+<meta name="keywords" content="{{ keywords }}">
+<meta name="author" content="{{ crate::util::AUTHOR }}">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ summary }}">
+<meta property="og:image" content="{{ image_url }}">
+<meta property="og:url" content="{{ url }}">
+<meta property="og:site_name" content="{{ crate::util::AUTHOR }}">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ summary }}">
+<meta name="twitter:image" content="{{ image_url }}">
+<meta name="twitter:creator" content="{{ crate::util::AUTHOR_TWITTER }}">
+
+<link rel="canonical" href="{{ url }}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ title }}",
+  "alternativeHeadline": "{{ title }}",
+  "image": [
+    "{{ image_url }}"
+  ],
+  "author": {
+    "@type": "Person",
+    "name": "{{ crate::util::AUTHOR }}",
+    "url": "{{ crate::util::AUTHOR_GITHUB }}"
+  },
+  "url": "{{ url }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ url }}"
+  },
+  "datePublished": "{{ date }}",
+  "dateModified": "{{ date }}",
+  "description": "{{ date }}",
+  "keywords": "{{ keywords }}",
+  "genre": "{{ keywords }}",
+  "wordcount": {{ word_count }}
+}
+</script>

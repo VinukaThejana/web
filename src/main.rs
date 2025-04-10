@@ -1,7 +1,7 @@
 use ::log::info;
 use axum::{
     Router,
-    http::{Method, header},
+    http::{HeaderValue, Method, header},
     routing::{get, post},
 };
 use portfolio::{
@@ -13,6 +13,7 @@ use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
     cors::{Any, CorsLayer},
+    set_header::SetResponseHeaderLayer,
     timeout::TimeoutLayer,
     trace::TraceLayer,
 };
@@ -43,7 +44,17 @@ async fn main() -> anyhow::Result<()> {
                     ),
             ),
         )
+        .route("/favicon.ico", get(handler::favicon))
+        .route("/apple-touch-icon.png", get(handler::apple_icon))
+        .route(
+            "/apple-touch-icon-precomposed.png",
+            get(handler::apple_icon_precompressed),
+        )
         .nest_service("/assets", tower_http::services::ServeDir::new("assets"))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=604800"),
+        ))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())

@@ -6,12 +6,15 @@ use axum::{
 
 pub async fn render(Path(social): Path<String>) -> Result<impl IntoResponse, AppError> {
     if social.is_empty() {
-        return Err(AppError::NotFound(anyhow::anyhow!("page not found")));
+        return Err(AppError::NotFound(anyhow::anyhow!(
+            "{} : page not found",
+            social
+        )));
     }
     let social = social.to_lowercase().trim().to_owned();
     let url = SOCIALS
         .get(&social)
-        .ok_or_else(|| AppError::NotFound(anyhow::anyhow!("page not found")))?;
+        .ok_or_else(|| AppError::NotFound(anyhow::anyhow!("{} : page not found", social)))?;
 
     Ok(Redirect::permanent(url))
 }
