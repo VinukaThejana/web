@@ -67,7 +67,7 @@
 </section>
 
 <!-- Latest Articles -->
-<section class="py-8">
+<section id="latest-articles" class="py-8">
   <h2 class="text-xl font-bold mb-6">Latest articles</h2>
     {% for post in posts %}
       {% include "components/article/index.html" %}
@@ -104,4 +104,3 @@
 
 {% block scripts %}
 {% endblock %}
-

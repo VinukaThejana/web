@@ -3,7 +3,7 @@ use crate::{
     database,
     error::AppError,
     model::project::{Project, ToProjects},
-    util::{from_cache, to_cache},
+    util::{Cache, from_cache, to_cache},
 };
 use askama::Template;
 use axum::{
@@ -19,6 +19,7 @@ pub struct About {
     pub projects: Vec<Project>,
 }
 
+const CACHE_PATH: &str = "about-projects";
 pub fn get_cache_key() -> String {
     format!("{}:projects", &ENV.redis_schema)
 }
@@ -39,12 +40,12 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
         .map_err(|e| AppError::Other(e.into()))
         .unwrap_or(None);
     if payload.is_some() {
-        log::info!("cache hit");
+        Cache::HIT.log(CACHE_PATH);
         about.projects = from_cache(&payload.unwrap());
         return Html(about.render().unwrap());
     }
 
-    log::info!("cache miss");
+    Cache::MISS.log(CACHE_PATH);
 
     let projects = database::project::get(&state.db)
         .await
@@ -53,12 +54,6 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
     let payload = to_cache(&projects);
 
     tokio::spawn(async move {
-        let conn = state.get_redis_conn().await.map_err(AppError::Other);
-        if conn.is_err() {
-            return;
-        }
-        let mut conn = conn.unwrap();
-
         let result: RedisResult<()> = redis::cmd("SET")
             .arg(get_cache_key())
             .arg(payload)
@@ -66,11 +61,12 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
             .arg(Duration::from_secs(90 * 24 * 60 * 60).as_secs())
             .query_async(&mut conn)
             .await;
-        if result.is_err() {
-            log::error!("cache failed : {:?}", result.err());
+        if let Err(e) = result {
+            log::error!("{:?}", e);
+            Cache::FAILED.log(CACHE_PATH);
             return;
         }
-        log::info!("cache update");
+        Cache::SET.log(CACHE_PATH);
     });
 
     about.projects = projects;

@@ -22,7 +22,7 @@
 <!-- About Content -->
 <main class="py-8">
   <!-- Bio Section -->
-  <section class="mb-16">
+  <section id="about-me" class="mb-16">
     <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">About Me</h2>
     <div class="space-y-4 text-gray-400">
       <p>
@@ -251,7 +251,7 @@
   </section>
 
   <!-- Key Projects Section -->
-  <section class="mb-16">
+  <section id="project-showcase" class="mb-16">
     <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-gray-800">Key Projects</h2>
 
     <div class="space-y-6">
@@ -413,4 +413,9 @@
     </div>
   </section>
 </main>
+
+{% call super() %}
+{% endblock %}
+
+{% block scripts %}
 {% endblock %}

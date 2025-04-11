@@ -1,0 +1,134 @@
+<div class="pagination-container flex justify-center mt-8 mb-12">
+  <nav
+    class="inline-flex items-center bg-gray-800 rounded-lg border border-gray-700 font-[JetBrains_Mono] text-sm overflow-hidden">
+    <!-- Previous Button -->
+    {% if page > 1 %}
+    <a href="{{ path }}/{{ page - 1 }}"
+      class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+          clip-rule="evenodd" />
+      </svg>
+      <span class="hidden sm:inline">prev</span>
+    </a>
+    {% else %}
+    <span class="px-3 py-2 text-gray-600 flex items-center cursor-not-allowed">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+          clip-rule="evenodd" />
+      </svg>
+      <span class="hidden sm:inline">prev</span>
+    </span>
+    {% endif %}
+
+    <!-- Page Numbers with Truncation -->
+    <div class="hidden sm:flex">
+      {% if total_pages <= 7 %} <!-- Show all pages if total is 7 or fewer -->
+        {% for i in 1..=(total_pages) %}
+        {% if i == page %}
+        <span class="px-3 py-2 bg-gray-700 text-green-400 border-x border-gray-700">
+          <span class="text-[#ff79c6]/80">p</span>{{ i }}
+        </span>
+        {% else %}
+        <a href="{{ path }}/{{ i }}"
+          class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+          <span class="text-gray-500">p</span>{{ i }}
+        </a>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <!-- Complex pagination with truncation -->
+        {% if page <= 3 %} <!-- Show 1 2 3 4 ... last -->
+          {% for i in 1..=4 %}
+          {% if i == page %}
+          <span class="px-3 py-2 bg-gray-700 text-green-400 border-x border-gray-700">
+            <span class="text-[#ff79c6]/80">p</span>{{ i }}
+          </span>
+          {% else %}
+          <a href="{{ path }}/{{ i }}"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>{{ i }}
+          </a>
+          {% endif %}
+          {% endfor %}
+          <span class="px-3 py-2 text-gray-500">...</span>
+          <a href="/{{ path }}/{{ total_pages }}"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>{{ total_pages }}
+          </a>
+          {% elif page >= total_pages - 2 %}
+          <!-- Show first ... third-last second-last last -->
+          <a href="/{{ path }}/1"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>1
+          </a>
+          <span class="px-3 py-2 text-gray-500">...</span>
+          {% for i in (total_pages - 3)..=(total_pages) %}
+          {% if i == page %}
+          <span class="px-3 py-2 bg-gray-700 text-green-400 border-x border-gray-700">
+            <span class="text-[#ff79c6]/80">p</span>{{ i }}
+          </span>
+          {% else %}
+          <a href="/{{ path }}/{{ i }}"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>{{ i }}
+          </a>
+          {% endif %}
+          {% endfor %}
+          {% else %}
+          <!-- Show first ... current-1 current current+1 ... last -->
+          <a href="/{{ path }}/1"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>1
+          </a>
+          <span class="px-3 py-2 text-gray-500">...</span>
+          {% for i in (page - 1)..=(page + 1) %}
+          {% if i == page %}
+          <span class="px-3 py-2 bg-gray-700 text-green-400 border-x border-gray-700">
+            <span class="text-[#ff79c6]/80">p</span>{{ i }}
+          </span>
+          {% else %}
+          <a href="{{ path }}/{{ i }}"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>{{ i }}
+          </a>
+          {% endif %}
+          {% endfor %}
+          <span class="px-3 py-2 text-gray-500">...</span>
+          <a href="{{ path }}/{{ total_pages }}"
+            class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition border-x border-gray-700">
+            <span class="text-gray-500">p</span>{{ total_pages }}
+          </a>
+          {% endif %}
+          {% endif %}
+    </div>
+
+    <!-- Mobile Page Display -->
+    <span class="px-3 py-2 sm:hidden text-green-400">
+      <span class="text-[#ff79c6]/80">p</span>{{ page }}<span class="text-gray-500">/</span>{{ total_pages }}
+    </span>
+
+    <!-- Next Button -->
+    {% if page < total_pages %} <a href="{{ path }}/{{ page + 1 }}"
+      class="px-3 py-2 text-gray-400 hover:text-green-400 hover:bg-gray-700 transition flex items-center">
+      <span class="hidden sm:inline">next</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+          clip-rule="evenodd" />
+      </svg>
+      </a>
+      {% else %}
+      <span class="px-3 py-2 text-gray-600 flex items-center cursor-not-allowed">
+        <span class="hidden sm:inline">next</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+      {% endif %}
+  </nav>
+</div>

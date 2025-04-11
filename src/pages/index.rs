@@ -3,7 +3,7 @@ use crate::{
     database,
     error::AppError,
     model::post::{Post, ToPosts},
-    util::{self, SOCIALS, from_cache, to_cache},
+    util::{self, Cache, SOCIALS, from_cache, to_cache},
 };
 use askama::Template;
 use axum::{
@@ -60,6 +60,7 @@ impl Index {
     }
 }
 
+const CACHE_PATH: &str = "index-posts";
 fn get_cache_key() -> String {
     format!("{}:latest_posts", &ENV.redis_schema)
 }
@@ -77,12 +78,13 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         .await
         .unwrap_or(None);
     if let Some(payload) = payload {
-        log::info!("cache hit");
+        Cache::HIT.log(CACHE_PATH);
         let posts = from_cache(&payload);
         return Ok(Html(Index::new(posts).await.render().unwrap()));
     }
 
-    log::info!("cache miss");
+    Cache::MISS.log(CACHE_PATH);
+
     let posts = database::post::get(&state.db)
         .await
         .unwrap_or(vec![])
@@ -90,13 +92,6 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
 
     let payload = to_cache(&posts);
     tokio::spawn(async move {
-        let conn = state.get_redis_conn().await.map_err(AppError::Other);
-        if let Err(e) = conn {
-            log::error!("failed to get redis connection : {:?}", e);
-            return;
-        }
-        let mut conn = conn.unwrap();
-
         let result: RedisResult<()> = redis::cmd("SET")
             .arg(get_cache_key())
             .arg(payload)
@@ -105,10 +100,11 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
-            log::error!("cache failed : {:?}", e);
+            log::error!("{:?}", e);
+            Cache::FAILED.log(CACHE_PATH);
             return;
         }
-        log::info!("cache set");
+        Cache::SET.log(CACHE_PATH);
     });
 
     Ok(Html(Index::new(posts).await.render().unwrap()))

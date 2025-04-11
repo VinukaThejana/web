@@ -2,7 +2,7 @@ use crate::{
     config::{ENV, state::AppState},
     database,
     error::AppError,
-    util::parser::cmark,
+    util::{Cache, NON_EXISTENT_KEY, parser::cmark},
 };
 use askama::Template;
 use axum::{
@@ -14,7 +14,6 @@ use redis::RedisResult;
 use serde::{Deserialize, Serialize};
 use std::{fs, time::Duration};
 
-const NON_EXISTENT_POST: &str = "non-existent-post";
 const POSTS_DIR: &str = "posts";
 
 #[derive(Debug, Template, Default)]
@@ -30,6 +29,7 @@ pub struct Post<'a> {
     pub word_count: usize,
 }
 
+const CACHE_PATH: &str = "post";
 pub fn get_cache_key(slug: &str) -> String {
     format!("{}:post:{}", &ENV.redis_schema, slug)
 }
@@ -71,9 +71,9 @@ impl PostCache {
 
     fn to_cache(&self) -> String {
         if self.title.is_empty() && self.content.is_empty() {
-            return NON_EXISTENT_POST.to_string();
+            return NON_EXISTENT_KEY.to_string();
         }
-        serde_json::to_string(self).unwrap_or(NON_EXISTENT_POST.to_string())
+        serde_json::to_string(self).unwrap_or(NON_EXISTENT_KEY.to_string())
     }
 }
 
@@ -88,14 +88,14 @@ pub async fn render(
         .await
         .map_err(|e| AppError::Other(e.into()))?;
     if let Some(content) = content {
-        if content == NON_EXISTENT_POST {
+        if content == NON_EXISTENT_KEY {
             return Err(AppError::NotFound(anyhow::anyhow!(
                 "post with slug {} not found",
                 slug
             )));
         }
 
-        log::info!("cache hit");
+        Cache::HIT.log(CACHE_PATH);
         let post_cache = PostCache::from_cache(&content);
         let post = Post {
             title: &post_cache.title,
@@ -110,29 +110,23 @@ pub async fn render(
         return Ok(Html(post.render().unwrap()));
     }
 
-    log::info!("cache miss");
+    Cache::MISS.log(CACHE_PATH);
 
     let markdown = fs::read_to_string(format!("{}/{}.md", POSTS_DIR, slug));
     if let Err(e) = markdown {
         tokio::spawn(async move {
-            let conn = state.get_redis_conn().await.map_err(AppError::Other);
-            if let Err(e) = conn {
-                log::error!("failed to get redis connection: {:?}", e);
-                return;
-            }
-            let mut conn = conn.unwrap();
-
             let result: RedisResult<()> = redis::cmd("SET")
                 .arg(get_cache_key(&slug))
-                .arg(NON_EXISTENT_POST)
+                .arg(NON_EXISTENT_KEY)
                 .arg("EX")
                 .arg(Duration::from_secs(24 * 60 * 60).as_secs())
                 .query_async(&mut conn)
                 .await;
             if let Err(e) = result {
-                log::error!("cache failed : {:?}", e);
+                log::error!("{:?}", e);
+                Cache::FAILED.log(CACHE_PATH);
             }
-            log::info!("cache set");
+            Cache::SET.log(CACHE_PATH);
         });
 
         log::error!("post not found: {:?}", e);
@@ -162,13 +156,6 @@ pub async fn render(
     );
 
     tokio::spawn(async move {
-        let conn = state.get_redis_conn().await.map_err(AppError::Other);
-        if let Err(e) = conn {
-            log::error!("failed to get redis connection: {:?}", e);
-            return;
-        }
-        let mut conn = conn.unwrap();
-
         let result: RedisResult<()> = redis::cmd("SET")
             .arg(get_cache_key(&slug))
             .arg(post_cache.to_cache())
@@ -177,9 +164,10 @@ pub async fn render(
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
-            log::error!("cache failed: {:?}", e);
+            log::error!("{:?}", e);
+            Cache::FAILED.log(CACHE_PATH);
         }
-        log::info!("cache set");
+        Cache::SET.log(CACHE_PATH);
     });
 
     let post = Post {

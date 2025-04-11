@@ -5,7 +5,7 @@ use crate::config::state::AppState;
 use base64::prelude::*;
 use phf::phf_map;
 use serde::{Deserialize, Deserializer};
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 use tokio::signal;
 
 pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
@@ -27,6 +27,8 @@ pub const AUTHOR_GITHUB: &str = "https://github.com/VinukaThejana";
 pub const AUTHOR_TWITTER: &str = "@VinukaThejana";
 
 pub const POST_LIMIT: usize = 10;
+
+pub const NON_EXISTENT_KEY: &str = "non-existent-post";
 
 pub async fn shutdown(state: AppState) {
     let ctrl_c = async {
@@ -95,4 +97,32 @@ where
     T: serde::de::DeserializeOwned + Default,
 {
     serde_json::from_str(payload).unwrap_or_else(|_| T::default())
+}
+
+pub enum Cache {
+    HIT,
+    MISS,
+    SET,
+    FAILED,
+    SNK,
+}
+impl Display for Cache {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::SET => write!(f, "cache set successfully"),
+            Self::HIT => write!(f, "cache hit"),
+            Self::MISS => write!(f, "cache miss"),
+            Self::FAILED => write!(f, "cache update failed"),
+            Self::SNK => write!(f, "cache set with non-existent key"),
+        }
+    }
+}
+
+impl Cache {
+    pub fn log(&self, key: &str) {
+        match self {
+            Self::FAILED => log::error!("{}: {}", key, self),
+            _ => log::info!("{}: {}", key, self),
+        }
+    }
 }

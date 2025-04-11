@@ -1,6 +1,6 @@
 use crate::{
     config::state::AppState,
-    database,
+    database::{self, post::Order},
     error::AppError,
     model::post::{Post, ToPosts},
     util,
@@ -18,14 +18,14 @@ use validator::Validate;
 #[template(path = "components/article/load-more.html")]
 pub struct LoadMore {
     pub posts: Vec<Post>,
-    pub next_page: usize,
+    pub next_page: u64,
     pub has_more: bool,
 }
 
 #[derive(Serialize, Deserialize, Validate)]
 pub struct Payload {
     #[validate(range(min = 1))]
-    pub page: usize,
+    pub page: u64,
 }
 
 pub async fn load_more(
@@ -35,7 +35,7 @@ pub async fn load_more(
     let page = payload.validate().map(|_| payload.page).unwrap_or(1);
     let mut load_more = LoadMore::default();
 
-    let mut posts = database::post::get_by_page(&state.db, page)
+    let mut posts = database::post::get_by_page(&state.db, page, Order::Asc, true)
         .await
         .unwrap_or(vec![])
         .to_posts();
