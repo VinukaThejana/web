@@ -1,5 +1,5 @@
 use crate::{
-    config::{ENV, state::AppState},
+    config::state::AppState,
     error::AppError,
     model::contact::ContactUs,
     util::{AUTHOR_EMAIL, srilankan_time},
@@ -10,7 +10,7 @@ use axum::{
     extract::State,
     response::{Html, IntoResponse},
 };
-use resend_rs::types::{ContactData, CreateEmailBaseOptions};
+use resend_rs::types::CreateEmailBaseOptions;
 use validator::Validate;
 
 #[derive(Debug, Default, Template)]

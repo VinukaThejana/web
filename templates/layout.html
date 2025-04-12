@@ -7,25 +7,21 @@
 
   {% include "components/icons.html" %}
 
-  <script src="/assets/js/tailwind.min.js"></script>
-  <script src="https://unpkg.com/htmx.org@2.0.4"
-    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
-    crossorigin="anonymous"></script>
+  <script src="/assets/js/htmx.min.js"></script>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="/assets/css/styles.css" rel="stylesheet">
+  {% block head %}{% endblock %}
+
+  <link href="/assets/css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+  <link href="/assets/css/fontawesome/css/brands.min.css" rel="stylesheet">
+  <link href="/assets/css/fontawesome/css/solid.min.css" rel="stylesheet">
+  <link href="/assets/css/fontawesome/css/regular.min.css" rel="stylesheet">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
     rel="stylesheet">
-
-  <style type="text/tailwindcss">
-    html {
-      font-family: 'Roboto Flex', ui-sans-serif, system-ui, sans-serif;
-    }
-  </style>
-  {% block head %}{% endblock %}
 </head>
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
