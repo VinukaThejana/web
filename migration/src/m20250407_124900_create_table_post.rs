@@ -12,6 +12,7 @@ enum Post {
     PhotoURL,
     Date,
     Summary,
+    Content,
     Tags,
 }
 
@@ -31,6 +32,7 @@ impl MigrationTrait for Migration {
                     .col(string(Post::PhotoURL).string_len(255))
                     .col(string(Post::Tags).string_len(255))
                     .col(text(Post::Summary))
+                    .col(text(Post::Content))
                     .col(integer(Post::Date))
                     .to_owned(),
             )

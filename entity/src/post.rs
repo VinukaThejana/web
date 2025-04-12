@@ -14,6 +14,8 @@ pub struct Model {
     pub tags: String,
     #[sea_orm(column_type = "Text")]
     pub summary: String,
+    #[sea_orm(column_type = "Text")]
+    pub content: String,
     pub date: i32,
 }
 

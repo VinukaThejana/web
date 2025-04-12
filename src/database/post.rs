@@ -1,23 +1,29 @@
-use std::time::Duration;
-
+use crate::{
+    cache::post::{gck_for_total, gct_for_total},
+    config::state::AppState,
+    error::AppError,
+    model::post::{AddPost, PartialPost},
+    util::{self, Cache},
+};
 use redis::RedisResult;
 use sea_orm::{
     DatabaseConnection, DbErr, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
     entity::*,
 };
 
-use crate::{
-    config::{ENV, state::AppState},
-    error::AppError,
-    util,
-};
-
-pub async fn get(db: &DatabaseConnection) -> Result<Vec<entity::post::Model>, DbErr> {
+pub async fn get(db: &DatabaseConnection) -> Result<Vec<PartialPost>, DbErr> {
     let posts = entity::post::Entity::find()
+        .select_only()
+        .columns(
+            entity::post::Column::iter()
+                .filter(|col| !matches!(col, entity::post::Column::Content)),
+        )
         .order_by_desc(entity::post::Column::Id)
         .limit(util::POST_LIMIT as u64)
+        .into_model::<PartialPost>()
         .all(db)
         .await?;
+    log::info!("posts: {:?}", posts);
 
     Ok(posts)
 }
@@ -33,22 +39,34 @@ pub async fn get_by_page(
     page: u64,
     order: Order,
     has_initial_data: bool,
-) -> Result<Vec<entity::post::Model>, DbErr> {
+) -> Result<Vec<PartialPost>, DbErr> {
     let limit: u64 = util::POST_LIMIT.try_into().unwrap();
     let offset: u64 = (if has_initial_data { limit } else { 0 } + ((page - 1) * limit));
 
     let posts = if order == Order::Desc {
         entity::post::Entity::find()
+            .select_only()
+            .columns(
+                entity::post::Column::iter()
+                    .filter(|col| !matches!(col, entity::post::Column::Content)),
+            )
             .order_by_desc(entity::post::Column::Id)
             .offset(offset)
             .limit((util::POST_LIMIT + 1) as u64)
+            .into_model::<PartialPost>()
             .all(db)
             .await?
     } else {
         entity::post::Entity::find()
+            .select_only()
+            .columns(
+                entity::post::Column::iter()
+                    .filter(|col| !matches!(col, entity::post::Column::Content)),
+            )
             .order_by_asc(entity::post::Column::Id)
             .offset(offset)
             .limit((util::POST_LIMIT + 1) as u64)
+            .into_model::<PartialPost>()
             .all(db)
             .await?
     };
@@ -69,21 +87,23 @@ pub async fn get_by_slug(
     Ok(post)
 }
 
-pub async fn get_total_posts(state: AppState) -> Result<u64, AppError> {
-    let ck = format!("{}:blog:totalpages", &ENV.redis_schema);
+pub async fn get_total_posts(state: AppState, force: bool) -> Result<u64, AppError> {
+    let cp = "total-pages";
 
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
-    let result: Option<u64> = redis::cmd("GET")
-        .arg(&ck)
-        .query_async(&mut conn)
-        .await
-        .map_err(|e| AppError::Other(e.into()))?;
-    if result.is_some() {
-        log::info!("cache hit");
-        return Ok(result.unwrap());
+    if !force {
+        let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+        let result: Option<u64> = redis::cmd("GET")
+            .arg(gck_for_total())
+            .query_async(&mut conn)
+            .await
+            .map_err(|e| AppError::Other(e.into()))?;
+        if let Some(result) = result {
+            Cache::HIT.log(cp);
+            return Ok(result);
+        }
+
+        Cache::MISS.log(cp);
     }
-
-    log::info!("cache miss");
 
     let total_posts = entity::post::Entity::find()
         .count(&state.db)
@@ -97,19 +117,39 @@ pub async fn get_total_posts(state: AppState) -> Result<u64, AppError> {
         }
         let mut conn = conn.unwrap();
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
+            .arg(gck_for_total())
             .arg(total_posts)
             .arg("EX")
-            .arg(Duration::from_secs(30 * 24 * 60 * 60).as_secs())
+            .arg(gct_for_total())
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
-            log::error!("cache set failed : {:?}", e);
+            log::error!("{:?}", e);
+            Cache::FAILED.log(cp);
             return;
         }
 
-        log::info!("cache set successfully");
+        Cache::SET.log(cp);
     });
 
     Ok(total_posts)
+}
+
+pub async fn add(db: &DatabaseConnection, payload: &AddPost) -> Result<(), DbErr> {
+    let post = entity::post::ActiveModel {
+        title: Set(payload.title.to_owned()),
+        slug: Set(payload.slug.to_owned()),
+        summary: Set(payload.summary.to_owned()),
+        photo_url: Set(payload.photo_url.to_owned()),
+        tags: Set(payload.tags.to_owned()),
+        content: Set(payload.content.to_owned()),
+        date: Set(payload
+            .date
+            .try_into()
+            .map_err(|_| DbErr::Custom(String::from("failed to convert date to signed")))?),
+        ..Default::default()
+    };
+    let _: entity::post::Model = post.insert(db).await?;
+
+    Ok(())
 }
