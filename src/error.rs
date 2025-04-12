@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse, Response},
 };
-use sea_orm::DbErr;
+use sea_orm::{DbErr, RuntimeErr};
 use std::fmt::Display;
 use validator::ValidationErrors;
 
@@ -76,10 +76,16 @@ impl AppError {
         Self::NotFound(anyhow::Error::new(e))
     }
 
-    pub fn from_database_error(e: DbErr) -> Self {
-        match e {
-            DbErr::RecordNotFound(e) => Self::NotFound(anyhow::anyhow!(e)),
-            _ => Self::Other(anyhow::anyhow!(e)),
+    pub fn from_database_error(error: DbErr) -> Self {
+        match error {
+            DbErr::RecordNotFound(err) => Self::NotFound(anyhow::anyhow!(err)),
+            err => {
+                if is_unique_violation(&err) {
+                    Self::UniqueViolation(err.into())
+                } else {
+                    Self::Other(err.into())
+                }
+            }
         }
     }
 }
@@ -123,5 +129,22 @@ impl IntoResponse for AppError {
                     .into_response()
             }
         }
+    }
+}
+
+fn is_unique_violation(err: &DbErr) -> bool {
+    match err {
+        DbErr::Query(RuntimeErr::SqlxError(error)) => {
+            if let Some(db_error) = error.as_database_error() {
+                if let Some(code) = db_error.code() {
+                    code == "23505"
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        }
+        _ => false,
     }
 }

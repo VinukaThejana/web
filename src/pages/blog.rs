@@ -1,7 +1,6 @@
-use std::time::Duration;
-
 use crate::{
-    config::{ENV, state::AppState},
+    cache::post::{gck_for_page, gct_for_page},
+    config::state::AppState,
     database::{self, post::Order},
     error::AppError,
     model::post::{Post, ToPosts},
@@ -25,15 +24,12 @@ pub struct BlogPage {
 fn gcp(page: u64) -> String {
     format!("blog-{}", page)
 }
-fn gck(page: u64) -> String {
-    format!("{}:blog:{}", &ENV.redis_schema, page)
-}
 
 pub async fn paginated(
     State(state): State<AppState>,
     Path(page): Path<u64>,
 ) -> Result<impl IntoResponse, AppError> {
-    let tp = database::post::get_total_posts(state.clone()).await?;
+    let tp = database::post::get_total_posts(state.clone(), false).await?;
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
     let mut blog = BlogPage {
         page,
@@ -43,7 +39,7 @@ pub async fn paginated(
 
     let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
     let payload: Option<String> = redis::cmd("GET")
-        .arg(gck(page))
+        .arg(gck_for_page(page))
         .query_async(&mut conn)
         .await
         .map_err(|e| AppError::Other(e.into()))?;
@@ -68,10 +64,10 @@ pub async fn paginated(
     let payload = to_cache(&posts);
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck(page))
+            .arg(gck_for_page(page))
             .arg(payload)
             .arg("EX")
-            .arg(Duration::from_secs(30 * 24 * 60 * 60).as_secs())
+            .arg(gct_for_page())
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {

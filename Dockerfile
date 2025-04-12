@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 COPY --from=builder /app/target/release/portfolio /usr/local/bin
 
-COPY --from=builder /app/posts /app/posts
 COPY --from=builder /app/assets /app/assets
 
 ENTRYPOINT ["/usr/local/bin/portfolio"]

@@ -67,7 +67,10 @@
 
 <!-- Latest Articles -->
 <section id="latest-articles" class="py-8">
-  <h2 class="text-xl font-bold mb-6 text-gray-300"><span class="text-green-400">Latest</span> articles</h2>
+  {% if posts.len() > 0 %}
+    <h2 class="text-xl font-bold mb-6 text-gray-300"><span class="text-green-400">Latest</span> articles</h2>
+  {% endif %}
+
   {% for post in posts %}
     {% include "components/article/index.html" %}
   {% endfor %}

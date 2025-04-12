@@ -1,4 +1,5 @@
 use crate::{
+    cache::post::{gck_for_slug, gct_for_slug},
     config::{ENV, state::AppState},
     database,
     error::AppError,
@@ -12,9 +13,6 @@ use axum::{
 use chrono::{DateTime, Utc};
 use redis::RedisResult;
 use serde::{Deserialize, Serialize};
-use std::{fs, time::Duration};
-
-const POSTS_DIR: &str = "posts";
 
 #[derive(Debug, Template, Default)]
 #[template(path = "post.html")]
@@ -30,9 +28,6 @@ pub struct Post<'a> {
 }
 
 const CACHE_PATH: &str = "post";
-pub fn get_cache_key(slug: &str) -> String {
-    format!("{}:post:{}", &ENV.redis_schema, slug)
-}
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PostCache {
@@ -45,26 +40,6 @@ pub struct PostCache {
     date: String,
 }
 impl PostCache {
-    fn new(
-        title: String,
-        image_url: String,
-        summary: String,
-        content: String,
-        url: String,
-        keywords: String,
-        date: String,
-    ) -> Self {
-        Self {
-            title,
-            image_url,
-            summary,
-            content,
-            url,
-            keywords,
-            date,
-        }
-    }
-
     fn from_cache(payload: &str) -> Self {
         serde_json::from_str(payload).unwrap_or(Self::default())
     }
@@ -76,6 +51,22 @@ impl PostCache {
         serde_json::to_string(self).unwrap_or(NON_EXISTENT_KEY.to_string())
     }
 }
+impl From<entity::post::Model> for PostCache {
+    fn from(value: entity::post::Model) -> Self {
+        let datetime = DateTime::<Utc>::from_timestamp(value.date.into(), 0).unwrap();
+        let date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+        Self {
+            title: value.title,
+            image_url: value.photo_url,
+            summary: value.summary,
+            content: value.content,
+            url: value.slug,
+            keywords: value.tags,
+            date,
+        }
+    }
+}
 
 pub async fn render(
     Path(slug): Path<String>,
@@ -83,11 +74,13 @@ pub async fn render(
 ) -> Result<impl IntoResponse, AppError> {
     let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
     let content: Option<String> = redis::cmd("GET")
-        .arg(get_cache_key(&slug))
+        .arg(gck_for_slug(&slug))
         .query_async(&mut conn)
         .await
         .map_err(|e| AppError::Other(e.into()))?;
     if let Some(content) = content {
+        Cache::HIT.log(CACHE_PATH);
+
         if content == NON_EXISTENT_KEY {
             return Err(AppError::NotFound(anyhow::anyhow!(
                 "post with slug {} not found",
@@ -95,7 +88,6 @@ pub async fn render(
             )));
         }
 
-        Cache::HIT.log(CACHE_PATH);
         let post_cache = PostCache::from_cache(&content);
         let post = Post {
             title: &post_cache.title,
@@ -112,14 +104,14 @@ pub async fn render(
 
     Cache::MISS.log(CACHE_PATH);
 
-    let markdown = fs::read_to_string(format!("{}/{}.md", POSTS_DIR, slug));
-    if let Err(e) = markdown {
+    let post = database::post::get_by_slug(&state.db, &slug).await;
+    if let Err(e) = post {
         tokio::spawn(async move {
             let result: RedisResult<()> = redis::cmd("SET")
-                .arg(get_cache_key(&slug))
+                .arg(gck_for_slug(&slug))
                 .arg(NON_EXISTENT_KEY)
                 .arg("EX")
-                .arg(Duration::from_secs(24 * 60 * 60).as_secs())
+                .arg(gct_for_slug())
                 .query_async(&mut conn)
                 .await;
             if let Err(e) = result {
@@ -133,34 +125,21 @@ pub async fn render(
         return Err(AppError::NotFound(e.into()));
     }
 
-    let markdown = markdown.unwrap();
-    let post = database::post::get_by_slug(&state.db, &slug)
-        .await
-        .map_err(AppError::from_database_error)?;
-    let datetime = DateTime::<Utc>::from_timestamp(post.date.into(), 0).unwrap();
-    let date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+    let post = post.unwrap();
+    let post: PostCache = post.into();
     let domain = if (*ENV.domain).ends_with("/") {
         format!("{}{}", &*ENV.domain, &slug)
     } else {
         format!("{}/{}", &*ENV.domain, &slug)
     };
 
-    let post_cache = PostCache::new(
-        post.title.clone(),
-        post.photo_url.clone(),
-        post.summary.clone(),
-        markdown.clone(),
-        domain.clone(),
-        post.tags.clone(),
-        date.clone(),
-    );
-
+    let cache = post.to_cache();
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(get_cache_key(&slug))
-            .arg(post_cache.to_cache())
+            .arg(gck_for_slug(&slug))
+            .arg(&cache)
             .arg("EX")
-            .arg(Duration::from_secs(24 * 60 * 60).as_secs())
+            .arg(gct_for_slug())
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
@@ -172,13 +151,13 @@ pub async fn render(
 
     let post = Post {
         title: &post.title,
-        image_url: &post.photo_url,
+        image_url: &post.image_url,
         summary: &post.summary,
-        content: &cmark(&markdown),
+        content: &cmark(&post.content),
         url: &domain,
-        keywords: &post.tags,
-        date: &date,
-        word_count: words_count::count(&markdown).words,
+        keywords: &post.keywords,
+        date: &post.date,
+        word_count: words_count::count(&post.content).words,
     };
     Ok(Html(post.render().unwrap()))
 }

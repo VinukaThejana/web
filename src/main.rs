@@ -29,6 +29,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/blog/{page}", get(pages::blog::paginated))
         .route("/{social}", get(pages::social::render))
         .route("/posts/{slug}", get(pages::post::render))
+        .route("/add-post", get(pages::addpost::render))
         .fallback(pages::notfound::render)
         .nest(
             "/api",
@@ -42,7 +43,8 @@ async fn main() -> anyhow::Result<()> {
                     .nest(
                         "/posts",
                         Router::new()
-                            .route("/home/load-more", post(handler::posts::home::load_more)),
+                            .route("/home/load-more", post(handler::posts::home::load_more))
+                            .route("/add", post(handler::posts::add)),
                     )
                     .route("/contact/send", post(handler::contact::send_msg)),
             ),

@@ -1,5 +1,8 @@
+use crate::util::verify;
 use chrono::{DateTime, Utc};
+use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Post {
@@ -30,11 +33,21 @@ impl Post {
     }
 }
 
+#[derive(FromQueryResult, Debug, Serialize, Deserialize)]
+pub struct PartialPost {
+    pub id: i32,
+    pub title: String,
+    pub slug: String,
+    pub summary: String,
+    pub tags: String,
+    pub date: i32,
+}
+
 pub trait ToPosts {
     fn to_posts(self) -> Vec<Post>;
 }
 
-impl ToPosts for Vec<entity::post::Model> {
+impl ToPosts for Vec<PartialPost> {
     fn to_posts(self) -> Vec<Post> {
         self.into_iter()
             .map(|post| {
@@ -55,4 +68,40 @@ impl ToPosts for Vec<entity::post::Model> {
             })
             .collect()
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct AddPost {
+    #[validate(length(
+        min = 5,
+        max = 50,
+        message = "title must be between 5 and 50 characters"
+    ))]
+    pub title: String,
+
+    #[validate(custom(function = "verify::slug"))]
+    pub slug: String,
+
+    #[validate(length(
+        min = 50,
+        max = 160,
+        message = "summary must be between 50 and 160 characters"
+    ))]
+    pub summary: String,
+
+    #[validate(length(max = 255, message = "photo_url must be less than 255 characters"))]
+    pub photo_url: String,
+
+    #[validate(length(max = 50, message = "tags must be less than 50 characters"))]
+    pub tags: String,
+
+    #[validate(length(
+        max = 100_000,
+        message = "content must be less than 100_000 characters"
+    ))]
+    pub content: String,
+
+    pub password: String,
+
+    pub date: u64,
 }

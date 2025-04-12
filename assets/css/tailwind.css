@@ -250,6 +250,9 @@
   .mx-auto {
     margin-inline: auto;
   }
+  .mt-1 {
+    margin-top: calc(var(--spacing) * 1);
+  }
   .mt-1\.5 {
     margin-top: calc(var(--spacing) * 1.5);
   }
@@ -457,6 +460,9 @@
   .justify-center {
     justify-content: center;
   }
+  .justify-end {
+    justify-content: flex-end;
+  }
   .gap-2 {
     gap: calc(var(--spacing) * 2);
   }
@@ -561,6 +567,9 @@
   }
   .border-gray-700 {
     border-color: var(--color-gray-700);
+  }
+  .border-red-500 {
+    border-color: var(--color-red-500);
   }
   .bg-\[\#44475a\] {
     background-color: #44475a;
@@ -749,11 +758,17 @@
   .text-red-400 {
     color: var(--color-red-400);
   }
+  .text-red-500 {
+    color: var(--color-red-500);
+  }
   .text-white {
     color: var(--color-white);
   }
   .text-yellow-300 {
     color: var(--color-yellow-300);
+  }
+  .lowercase {
+    text-transform: lowercase;
   }
   .opacity-0 {
     opacity: 0%;
@@ -761,6 +776,10 @@
   .outline {
     outline-style: var(--tw-outline-style);
     outline-width: 1px;
+  }
+  .blur {
+    --tw-blur: blur(8px);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
   .grayscale {
     --tw-grayscale: grayscale(100%);
@@ -794,6 +813,27 @@
       @media (hover: hover) {
         --tw-translate-x: calc(var(--spacing) * 1);
         translate: var(--tw-translate-x) var(--tw-translate-y);
+      }
+    }
+  }
+  .group-hover\:bg-\[\#ff79c6\] {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        background-color: #ff79c6;
+      }
+    }
+  }
+  .group-hover\:text-\[\#ff79c6\] {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        color: #ff79c6;
+      }
+    }
+  }
+  .group-hover\:text-green-400 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        color: var(--color-green-400);
       }
     }
   }
@@ -839,10 +879,31 @@
       }
     }
   }
+  .hover\:bg-green-600 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-green-600);
+      }
+    }
+  }
+  .hover\:text-\[\#50fa7b\] {
+    &:hover {
+      @media (hover: hover) {
+        color: #50fa7b;
+      }
+    }
+  }
   .hover\:text-\[\#ff79c6\] {
     &:hover {
       @media (hover: hover) {
         color: #ff79c6;
+      }
+    }
+  }
+  .hover\:text-gray-300 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-gray-300);
       }
     }
   }
@@ -857,6 +918,13 @@
     &:hover {
       @media (hover: hover) {
         color: var(--color-green-400);
+      }
+    }
+  }
+  .hover\:text-white {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-white);
       }
     }
   }

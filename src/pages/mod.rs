@@ -1,4 +1,5 @@
 pub mod about;
+pub mod addpost;
 pub mod blog;
 pub mod index;
 pub mod notfound;

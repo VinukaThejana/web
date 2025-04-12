@@ -1,5 +1,6 @@
 use crate::{
-    config::{ENV, state::AppState},
+    cache::post::{gck_for_home, gct_for_home},
+    config::state::AppState,
     database,
     error::AppError,
     model::post::{Post, ToPosts},
@@ -11,7 +12,6 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use redis::RedisResult;
-use std::time::Duration;
 
 pub struct Social<'a> {
     pub name: &'a str,
@@ -61,9 +61,6 @@ impl Index {
 }
 
 const CACHE_PATH: &str = "index-posts";
-fn get_cache_key() -> String {
-    format!("{}:latest_posts", &ENV.redis_schema)
-}
 
 pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
@@ -73,7 +70,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     }
     let mut conn = conn.unwrap();
     let payload: Option<String> = redis::cmd("GET")
-        .arg(get_cache_key())
+        .arg(gck_for_home())
         .query_async(&mut conn)
         .await
         .unwrap_or(None);
@@ -89,14 +86,15 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         .await
         .unwrap_or(vec![])
         .to_posts();
+    println!("posts: askdfkasdkf {:?}", posts);
 
     let payload = to_cache(&posts);
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(get_cache_key())
+            .arg(gck_for_home())
             .arg(payload)
             .arg("EX")
-            .arg(Duration::from_secs(30 * 24 * 60 * 60).as_secs())
+            .arg(gct_for_home())
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
