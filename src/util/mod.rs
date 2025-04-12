@@ -3,6 +3,7 @@ pub mod verify;
 
 use crate::config::state::AppState;
 use base64::prelude::*;
+use chrono::{DateTime, FixedOffset, Utc};
 use phf::phf_map;
 use serde::{Deserialize, Deserializer};
 use std::{fmt::Display, sync::Arc};
@@ -125,4 +126,9 @@ impl Cache {
             _ => log::info!("{}: {}", key, self),
         }
     }
+}
+
+pub fn srilankan_time() -> DateTime<FixedOffset> {
+    let sri_lanka_offset = FixedOffset::east_opt(5 * 3600 + 30 * 60).unwrap();
+    Utc::now().with_timezone(&sri_lanka_offset)
 }
