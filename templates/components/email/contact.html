@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Contact Form Submission</title>
+  <style>
+    body {
+      background-color: #282a36;
+      color: #f8f8f2;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #282a36;
+      border: 1px solid #44475a;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #44475a;
+    }
+
+    .header h1 {
+      color: #f8f8f2;
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .accent {
+      color: #50fa7b;
+    }
+
+    .info-box {
+      background-color: #44475a;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .info-box p {
+      margin: 0 0 10px 0;
+      font-weight: bold;
+      color: #50fa7b;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .info-table td {
+      padding: 8px 0;
+    }
+
+    .info-table td:first-child {
+      width: 120px;
+      color: #f8f8f2;
+    }
+
+    .info-table td:last-child {
+      color: #ff79c6;
+    }
+
+    .message-content {
+      padding: 10px;
+      background-color: #282a36;
+      border-radius: 4px;
+      border: 1px solid #6272a4;
+      color: #f8f8f2;
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      padding-top: 20px;
+      margin-top: 20px;
+      border-top: 1px solid #44475a;
+      font-size: 14px;
+      color: #6272a4;
+    }
+
+    .footer p {
+      margin: 0 0 10px 0;
+    }
+
+    .branding {
+      margin-top: 15px;
+      color: #f8f8f2;
+    }
+
+    .branding svg {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .branding span {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 5px;
+    }
+
+    .message-date {
+      color: #f8f8f2;
+    }
+
+    .button {
+      display: inline-block;
+      background-color: #50fa7b;
+      color: #282a36;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1><span class="accent">New</span> Contact Form Submission</h1>
+    </div>
+
+    <!-- Message Info -->
+    <div class="info-box">
+      <p>Message Details:</p>
+      <table class="info-table">
+        <tr>
+          <td>Name:</td>
+          <td>{{name}}</td>
+        </tr>
+        <tr>
+          <td>Email:</td>
+          <td>{{email}}</td>
+        </tr>
+        <tr>
+          <td>Date:</td>
+          <td class="message-date">{{date}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Message Content -->
+    <div class="info-box">
+      <p>Message:</p>
+      <div class="message-content">
+        {{message}}
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <div style="text-align: center; margin: 25px 0;">
+      <a href="mailto:{{email}}" class="button">Reply to Message</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        This message was sent from your website's contact form.
+      </p>
+      <div class="branding">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16">
+          <path d="M8.16 23h21.177v-5.86l-4.023-2.307-.694-.3-16.46.113z" fill="#fff" />
+          <path
+            d="M22.012 22.222c.197-.675.122-1.294-.206-1.754-.3-.422-.807-.666-1.416-.694l-11.545-.15c-.075 0-.14-.038-.178-.094s-.047-.13-.028-.206c.038-.113.15-.197.272-.206l11.648-.15c1.38-.066 2.88-1.182 3.404-2.55l.666-1.735a.38.38 0 0 0 .02-.225c-.75-3.395-3.78-5.927-7.4-5.927-3.34 0-6.17 2.157-7.184 5.15-.657-.488-1.5-.75-2.392-.666-1.604.16-2.9 1.444-3.048 3.048a3.58 3.58 0 0 0 .084 1.191A4.84 4.84 0 0 0 0 22.1c0 .234.02.47.047.703.02.113.113.197.225.197H21.58a.29.29 0 0 0 .272-.206l.16-.572z"
+            fill="#f38020" />
+          <path
+            d="M25.688 14.803l-.32.01c-.075 0-.14.056-.17.13l-.45 1.566c-.197.675-.122 1.294.206 1.754.3.422.807.666 1.416.694l2.457.15c.075 0 .14.038.178.094s.047.14.028.206c-.038.113-.15.197-.272.206l-2.56.15c-1.388.066-2.88 1.182-3.404 2.55l-.188.478c-.038.094.028.188.13.188h8.797a.23.23 0 0 0 .225-.169A6.41 6.41 0 0 0 32 21.106a6.32 6.32 0 0 0-6.312-6.302"
+            fill="#faae40" />
+        </svg>
+        <span>Processed by CloudFlare</span>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

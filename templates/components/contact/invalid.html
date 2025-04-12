@@ -1,0 +1,22 @@
+<div class="p-6 bg-gray-800 rounded-lg border border-[#44475a] text-center">
+  <div class="mb-6 inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-full">
+    <i class="fa-solid fa-exclamation-triangle text-green-400 text-2xl"></i>
+  </div>
+  <h3 class="text-xl font-bold mb-2"><span class="text-green-400">Invalid</span> Input</h3>
+  <p class="text-gray-300 mb-6">
+    {{ message }}
+  </p>
+  <div class="mt-4 flex items-center justify-center p-3 bg-black rounded-md">
+    <span class="inline-flex items-center justify-center w-6 h-6 bg-red-500 rounded-full mr-2">
+      <i class="fa-solid fa-times text-white text-xs"></i>
+    </span>
+    <span class="text-white text-sm">Invalid</span>
+    <span class="ml-auto">
+      {% include "icons/cloudflare.html" %}
+    </span>
+  </div>
+  <button class="mt-6 px-4 py-2 bg-[#44475a] hover:bg-[#ff79c6] hover:text-gray-900 text-gray-300 rounded-sm transition"
+    onclick="window.location.reload()">
+    Try Again
+  </button>
+</div>

@@ -43,7 +43,8 @@ async fn main() -> anyhow::Result<()> {
                         "/posts",
                         Router::new()
                             .route("/home/load-more", post(handler::posts::home::load_more)),
-                    ),
+                    )
+                    .route("/contact/send", post(handler::contact::send_msg)),
             ),
         )
         .route("/favicon.ico", get(handler::favicon))

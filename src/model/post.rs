@@ -47,7 +47,10 @@ impl ToPosts for Vec<entity::post::Model> {
                         .format("%Y-%m-%d")
                         .to_string(),
                     post.summary.clone(),
-                    post.tags.split(",").map(|s| s.to_string()).collect(),
+                    post.tags
+                        .split(",")
+                        .map(|s| s.chars().filter(|c| !c.is_whitespace()).collect())
+                        .collect(),
                 )
             })
             .collect()

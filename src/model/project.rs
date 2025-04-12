@@ -39,7 +39,11 @@ impl ToProjects for Vec<entity::project::Model> {
                     project.id,
                     project.title.clone(),
                     project.description.clone(),
-                    project.tags.split(",").map(|s| s.to_string()).collect(),
+                    project
+                        .tags
+                        .split(",")
+                        .map(|s| s.chars().filter(|c| !c.is_whitespace()).collect())
+                        .collect(),
                     project.date,
                 )
             })
