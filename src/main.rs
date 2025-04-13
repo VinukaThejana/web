@@ -8,9 +8,10 @@ use portfolio::{
     config::{ENV, log, state::AppState},
     handler, pages, util,
 };
-use std::time::Duration;
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
+use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{
     cors::{Any, CorsLayer},
     set_header::SetResponseHeaderLayer,
@@ -22,6 +23,25 @@ use tower_http::{
 async fn main() -> anyhow::Result<()> {
     log::setup();
     let state = AppState::new().await;
+
+    let governer_conf = Arc::new(
+        GovernorConfigBuilder::default()
+            .per_second(10)
+            .burst_size(20)
+            .finish()
+            .unwrap(),
+    );
+    let governer_limiter = governer_conf.limiter().clone();
+    let interval = Duration::from_secs(60);
+
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(interval);
+        loop {
+            interval.tick().await;
+            info!("rate limiting storage size: {}", governer_limiter.len());
+            governer_limiter.retain_recent();
+        }
+    });
 
     let app = Router::new()
         .route("/", get(pages::index::render))
@@ -70,16 +90,19 @@ async fn main() -> anyhow::Result<()> {
                         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
                         .allow_methods([Method::GET])
                         .allow_origin(Any),
-                ),
+                )
+                .layer(GovernorLayer {
+                    config: governer_conf,
+                }),
         )
         .with_state(state.clone());
 
     info!("up and running on : {}", &ENV.port);
     axum::serve(
-        TcpListener::bind(format!("0.0.0.0:{}", &ENV.port))
+        TcpListener::bind(&format!("0.0.0.0:{}", &ENV.port))
             .await
             .unwrap(),
-        app,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
     )
     .with_graceful_shutdown(util::shutdown(state))
     .await
