@@ -4,19 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   {% include "components/icons.html" %}
-
   <script src="/assets/js/htmx.min.js"></script>
-
   <link href="/assets/css/styles.css" rel="stylesheet">
   {% block head %}{% endblock %}
-
   <link href="/assets/css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
   <link href="/assets/css/fontawesome/css/brands.min.css" rel="stylesheet">
   <link href="/assets/css/fontawesome/css/solid.min.css" rel="stylesheet">
   <link href="/assets/css/fontawesome/css/regular.min.css" rel="stylesheet">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -25,7 +20,7 @@
 </head>
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
-  <div class="container mx-auto px-4 max-w-3xl flex-grow">
+  <div class="container mx-auto px-4 max-w-3xl flex-grow flex flex-col">
     <!-- Navigation -->
     <nav class="py-6 flex justify-center">
       <div class="flex space-x-8 text-sm">
@@ -35,8 +30,11 @@
       </div>
     </nav>
 
-    {% block content %}
-    {% endblock %}
+    <!-- Content area - modified to be a flex container -->
+    <div class="flex-grow flex flex-col">
+      {% block content %}
+      {% endblock %}
+    </div>
   </div>
 
   <!-- Footer -->
@@ -48,7 +46,6 @@
       © 2025 <a href="/" class="hover:text-green-400 transition">{{ crate::util::AUTHOR }}</a>. All rights reserved.
     </div>
   </footer>
-
   {% block scripts %}{% endblock %}
 </body>
 

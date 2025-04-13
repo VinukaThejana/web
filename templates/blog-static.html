@@ -1,22 +1,22 @@
 {% extends "layout.html" %}
-
 {% block head %}
 {% set title="Home" %}
 {% include "components/seo/seo.html" %}
 {% endblock %}
-
 {% block content %}
-<section id="blob-page-{{ page }}" class="py-16">
-  {% for post in posts %}
-  {% include "components/article/index.html" %}
-  {% endfor %}
-</section>
+<div class="flex flex-col items-center justify-start min-h-screen">
+  <section id="blob-page-{{ page }}" class="flex-grow mt-4 py-8">
+    {% for post in posts %}
+    {% include "components/article/index.html" %}
+    {% endfor %}
+  </section>
+</div>
 
-{% set path="/blog" %}
-{% include "components/pagination.html" %}
-
+<div class="mb-auto">
+  {% set path="/blog" %}
+  {% include "components/pagination.html" %}
+</div>
 {% call super() %}
 {% endblock %}
-
 {% block scripts %}
 {% endblock %}
