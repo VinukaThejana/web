@@ -1,11 +1,7 @@
 use crate::{
-    cache::post::{gck_for_total, gct_for_total},
-    config::state::AppState,
-    error::AppError,
     model::post::{AddPost, PartialPost, PartialPostWithSlug},
-    util::{self, Cache},
+    util::{self},
 };
-use redis::RedisResult;
 use sea_orm::{
     DatabaseConnection, DbErr, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
     entity::*,

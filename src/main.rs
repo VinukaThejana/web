@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
                     .route("/contact/send", post(handler::contact::send_msg)),
             ),
         )
-        .route("/sitemap.xml.", get(handler::site_xml))
+        .route("/sitemap.xml", get(handler::site_xml))
         .route("/favicon.ico", get(handler::favicon))
         .route("/apple-touch-icon.png", get(handler::apple_icon))
         .route(

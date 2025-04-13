@@ -27,8 +27,6 @@ pub struct Post<'a> {
     pub word_count: usize,
 }
 
-const CACHE_PATH: &str = "post";
-
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PostCache {
     title: String,
@@ -72,14 +70,17 @@ pub async fn render(
     Path(slug): Path<String>,
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, AppError> {
+    let ck = gck_for_slug(&slug);
+    let ct = gct_for_slug();
+
     let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
     let content: Option<String> = redis::cmd("GET")
-        .arg(gck_for_slug(&slug))
+        .arg(&ck)
         .query_async(&mut conn)
         .await
         .map_err(|e| AppError::Other(e.into()))?;
     if let Some(content) = content {
-        Cache::HIT.log(CACHE_PATH);
+        Cache::HIT.log(&ck);
 
         if content == NON_EXISTENT_KEY {
             return Err(AppError::NotFound(anyhow::anyhow!(
@@ -102,23 +103,23 @@ pub async fn render(
         return Ok(Html(post.render().unwrap()));
     }
 
-    Cache::MISS.log(CACHE_PATH);
+    Cache::MISS.log(&ck);
 
     let post = database::post::get_by_slug(&state.db, &slug).await;
     if let Err(e) = post {
         tokio::spawn(async move {
             let result: RedisResult<()> = redis::cmd("SET")
-                .arg(gck_for_slug(&slug))
+                .arg(&ck)
                 .arg(NON_EXISTENT_KEY)
                 .arg("EX")
-                .arg(gct_for_slug())
+                .arg(ct)
                 .query_async(&mut conn)
                 .await;
             if let Err(e) = result {
                 log::error!("{:?}", e);
-                Cache::FAILED.log(CACHE_PATH);
+                Cache::FAILED.log(&ck);
             }
-            Cache::SET.log(CACHE_PATH);
+            Cache::SET.log(&ck);
         });
 
         log::error!("post not found: {:?}", e);
@@ -136,17 +137,17 @@ pub async fn render(
     let cache = post.to_cache();
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_slug(&slug))
+            .arg(&ck)
             .arg(&cache)
             .arg("EX")
-            .arg(gct_for_slug())
+            .arg(ct)
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
             log::error!("{:?}", e);
-            Cache::FAILED.log(CACHE_PATH);
+            Cache::FAILED.log(&ck);
         }
-        Cache::SET.log(CACHE_PATH);
+        Cache::SET.log(&ck);
     });
 
     let post = Post {

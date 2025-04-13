@@ -24,10 +24,6 @@ pub struct BlogPage {
     pub posts: Vec<Post>,
 }
 
-fn gcp(page: u64) -> String {
-    format!("blog-{}", page)
-}
-
 pub async fn paginated(
     State(state): State<AppState>,
     Path(page): Path<u64>,
@@ -39,15 +35,17 @@ pub async fn paginated(
         total_pages: tp,
         ..Default::default()
     };
+    let ck = gck_for_page(page);
+    let ct = gct_for_page();
 
     let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
     let payload: Option<String> = redis::cmd("GET")
-        .arg(gck_for_page(page))
+        .arg(&ck)
         .query_async(&mut conn)
         .await
         .map_err(|e| AppError::Other(e.into()))?;
     if let Some(payload) = payload {
-        Cache::HIT.log(&gcp(page));
+        Cache::HIT.log(&ck);
         blog.posts = from_cache(&payload);
         if blog.posts.is_empty() {
             return Err(AppError::NotFound(anyhow::anyhow!(
@@ -58,7 +56,7 @@ pub async fn paginated(
         return Ok(Html(blog.render().unwrap()));
     }
 
-    Cache::MISS.log(&gcp(page));
+    Cache::MISS.log(&ck);
 
     let posts = database::post::get_by_page(&state.db, page, Order::Asc, false)
         .await
@@ -67,18 +65,18 @@ pub async fn paginated(
     let payload = to_cache(&posts);
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_page(page))
+            .arg(&ck)
             .arg(payload)
             .arg("EX")
-            .arg(gct_for_page())
+            .arg(ct)
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
             log::error!("{:?}", e);
-            Cache::FAILED.log(&gcp(page));
+            Cache::FAILED.log(&ck);
             return;
         }
-        Cache::SET.log(&gcp(page));
+        Cache::SET.log(&ck);
     });
 
     if posts.is_empty() {

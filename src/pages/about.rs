@@ -1,5 +1,6 @@
 use crate::{
-    config::{ENV, state::AppState},
+    cache::project::{gck_projects, gct_projects},
+    config::state::AppState,
     database,
     error::AppError,
     model::project::{Project, ToProjects},
@@ -11,7 +12,6 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use redis::RedisResult;
-use std::time::Duration;
 
 #[derive(Debug, Template, Default)]
 #[template(path = "about.html")]
@@ -19,12 +19,10 @@ pub struct About {
     pub projects: Vec<Project>,
 }
 
-const CACHE_PATH: &str = "about-projects";
-pub fn get_cache_key() -> String {
-    format!("{}:projects", &ENV.redis_schema)
-}
-
 pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
+    let ck = gck_projects();
+    let ct = gct_projects();
+
     let mut about = About::default();
 
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
@@ -34,18 +32,18 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
     let mut conn = conn.unwrap();
 
     let payload: Option<String> = redis::cmd("GET")
-        .arg(get_cache_key())
+        .arg(&ck)
         .query_async(&mut conn)
         .await
         .map_err(|e| AppError::Other(e.into()))
         .unwrap_or(None);
     if payload.is_some() {
-        Cache::HIT.log(CACHE_PATH);
+        Cache::HIT.log(&ck);
         about.projects = from_cache(&payload.unwrap());
         return Html(about.render().unwrap());
     }
 
-    Cache::MISS.log(CACHE_PATH);
+    Cache::MISS.log(&ck);
 
     let projects = database::project::get(&state.db)
         .await
@@ -55,18 +53,18 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
 
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(get_cache_key())
+            .arg(&ck)
             .arg(payload)
             .arg("EX")
-            .arg(Duration::from_secs(90 * 24 * 60 * 60).as_secs())
+            .arg(ct)
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
             log::error!("{:?}", e);
-            Cache::FAILED.log(CACHE_PATH);
+            Cache::FAILED.log(&ck);
             return;
         }
-        Cache::SET.log(CACHE_PATH);
+        Cache::SET.log(&ck);
     });
 
     about.projects = projects;

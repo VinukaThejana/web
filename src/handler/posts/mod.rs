@@ -3,7 +3,7 @@ pub mod home;
 use crate::{
     cache::{
         self,
-        post::{gck_for_home, gck_for_page, gck_for_slug},
+        post::{gck_for_home, gck_for_page, gck_for_slug, gck_for_slugs},
     },
     config::{ENV, state::AppState},
     database,
@@ -134,6 +134,9 @@ pub async fn add(
             .ignore()
             .cmd("DEL")
             .arg(gck_for_page(tp))
+            .ignore()
+            .cmd("DEL")
+            .arg(gck_for_slugs())
             .ignore()
             .query_async(&mut conn)
             .await;

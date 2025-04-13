@@ -60,9 +60,10 @@ impl Index {
     }
 }
 
-const CACHE_PATH: &str = "index-posts";
-
 pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+    let ck = gck_for_home();
+    let ct = gct_for_home();
+
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
     if let Err(e) = conn {
         log::error!("failed to get redis connection : {:?}", e);
@@ -70,17 +71,17 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     }
     let mut conn = conn.unwrap();
     let payload: Option<String> = redis::cmd("GET")
-        .arg(gck_for_home())
+        .arg(&ck)
         .query_async(&mut conn)
         .await
         .unwrap_or(None);
     if let Some(payload) = payload {
-        Cache::HIT.log(CACHE_PATH);
+        Cache::HIT.log(&ck);
         let posts = from_cache(&payload);
         return Ok(Html(Index::new(posts).await.render().unwrap()));
     }
 
-    Cache::MISS.log(CACHE_PATH);
+    Cache::MISS.log(&ck);
 
     let posts = database::post::get(&state.db)
         .await
@@ -91,18 +92,18 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     let payload = to_cache(&posts);
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_home())
+            .arg(&ck)
             .arg(payload)
             .arg("EX")
-            .arg(gct_for_home())
+            .arg(ct)
             .query_async(&mut conn)
             .await;
         if let Err(e) = result {
             log::error!("{:?}", e);
-            Cache::FAILED.log(CACHE_PATH);
+            Cache::FAILED.log(&ck);
             return;
         }
-        Cache::SET.log(CACHE_PATH);
+        Cache::SET.log(&ck);
     });
 
     Ok(Html(Index::new(posts).await.render().unwrap()))
