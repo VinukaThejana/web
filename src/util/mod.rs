@@ -132,3 +132,12 @@ pub fn srilankan_time() -> DateTime<FixedOffset> {
     let sri_lanka_offset = FixedOffset::east_opt(5 * 3600 + 30 * 60).unwrap();
     Utc::now().with_timezone(&sri_lanka_offset)
 }
+
+pub fn escape_xml(input: &str) -> String {
+    input
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('\'', "&apos;")
+        .replace('"', "&quot;")
+}

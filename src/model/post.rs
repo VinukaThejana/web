@@ -105,3 +105,10 @@ pub struct AddPost {
 
     pub date: u64,
 }
+
+#[derive(FromQueryResult, Debug, Serialize, Deserialize)]
+pub struct PartialPostWithSlug {
+    pub id: i32,
+    pub date: i32,
+    pub slug: String,
+}

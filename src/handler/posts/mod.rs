@@ -17,6 +17,7 @@ use axum::{
     extract::State,
     response::{Html, IntoResponse},
 };
+use chrono::{DateTime, Utc};
 use redis::RedisResult;
 use validator::Validate;
 
@@ -112,6 +113,18 @@ pub async fn add(
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
 
     tokio::spawn(async move {
+        if let Err(e) = cache::post::update_last_modified(
+            state.clone(),
+            tp,
+            &DateTime::<Utc>::from_timestamp(payload.date.try_into().unwrap(), 0)
+                .unwrap()
+                .to_rfc3339(),
+        )
+        .await
+        {
+            log::error!("failed to update last modified: {}", e);
+        }
+
         let result: RedisResult<()> = redis::pipe()
             .cmd("DEL")
             .arg(gck_for_home())
