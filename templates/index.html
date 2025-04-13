@@ -3,6 +3,8 @@
 {% block head %}
   {% set title="Home" %}
   {% include "components/seo/seo.html" %}
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endblock %}
 
 {% block content %}
@@ -46,6 +48,12 @@
         autocomplete="email"
         class="flex-grow px-3 py-2 bg-gray-700 border border-[#44475a] rounded-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400"
         required>
+        <div
+          class="cf-turnstile hidden"
+          data-sitekey="{{ &crate::config::ENV.turnstile_site_key }}"
+          data-callback="onSubmit"
+          data-size="invisible">
+        </div>
       <button
         hx-trigger="click"
         hx-post="/api/components/newsletter/subscribe"

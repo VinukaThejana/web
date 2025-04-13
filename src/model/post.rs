@@ -103,6 +103,10 @@ pub struct AddPost {
 
     pub password: String,
 
+    #[validate(length(min = 1, message = "not valid"))]
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: String,
+
     pub date: u64,
 }
 

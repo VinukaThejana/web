@@ -3,6 +3,8 @@
 {% block head %}
 {% set title="About" %}
 {% include "components/seo/seo.html" %}
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endblock %}
 
 {% block content %}
@@ -402,6 +404,13 @@
             <label for="message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
             <textarea id="message" rows="4" name="message"
               class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md focus:outline-none focus:ring-1 focus:ring-green-400"></textarea>
+          </div>
+
+          <div
+            class="cf-turnstile"
+            data-sitekey="{{ &crate::config::ENV.turnstile_site_key }}"
+            data-callback="onSubmit"
+            data-size="invisible">
           </div>
 
           <button type="submit"

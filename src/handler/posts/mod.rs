@@ -1,5 +1,7 @@
 pub mod home;
 
+use std::net::SocketAddr;
+
 use crate::{
     cache::{
         self,
@@ -9,12 +11,12 @@ use crate::{
     database,
     error::AppError,
     model::post::AddPost,
-    util::POST_LIMIT,
+    util::{POST_LIMIT, cloudflare_verify},
 };
 use askama::Template;
 use axum::{
     Form,
-    extract::State,
+    extract::{ConnectInfo, State},
     response::{Html, IntoResponse},
 };
 use chrono::{DateTime, Utc};
@@ -40,10 +42,20 @@ impl<'a> PostAddInvaid<'a> {
     }
 }
 
+#[derive(Debug, Default, Template)]
+#[template(path = "components/add-post/captcha.html")]
+pub struct PostCaptchaFailed {}
+
 pub async fn add(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<AddPost>,
 ) -> Result<impl IntoResponse, AppError> {
+    let ip = addr.ip().to_string();
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return Ok(Html(PostCaptchaFailed::default().render().unwrap()));
+    }
+
     if let Err(e) = payload.validate() {
         let message = e
             .field_errors()

@@ -1,13 +1,15 @@
 pub mod parser;
 pub mod verify;
 
-use crate::config::state::AppState;
+use crate::config::{ENV, state::AppState};
 use base64::prelude::*;
 use chrono::{DateTime, FixedOffset, Utc};
 use phf::phf_map;
+use reqwest::Client;
 use serde::{Deserialize, Deserializer};
 use std::{fmt::Display, sync::Arc};
 use tokio::signal;
+use ulid::Ulid;
 
 pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
     "github" => "https://github.com/VinukaThejana",
@@ -140,4 +142,40 @@ pub fn escape_xml(input: &str) -> String {
         .replace('>', "&gt;")
         .replace('\'', "&apos;")
         .replace('"', "&quot;")
+}
+
+pub async fn cloudflare_verify(token: &str, ip: &str) -> bool {
+    let client = Client::new();
+    let key = Ulid::new().to_string();
+
+    let response = match client
+        .post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
+        .form(&[
+            ("secret", &*ENV.turnstile_site_secret),
+            ("response", token),
+            ("remoteip", ip),
+            ("idempotency_key", &key),
+        ])
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(err) => {
+            log::error!("cloudflare verification failed [ip: {}] : {:?}", ip, err);
+            return false;
+        }
+    };
+
+    let json: serde_json::Value = response.json().await.unwrap_or_default();
+    let success = json
+        .get("success")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    if !success {
+        log::error!("cloudflare verification failed [ip: {}] : {:?}", ip, json);
+        return false;
+    }
+
+    log::info!("cloudflare verification success [ip: {}]", ip);
+    true
 }

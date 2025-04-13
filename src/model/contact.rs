@@ -19,4 +19,8 @@ pub struct ContactUs {
         message = "message must be between 10 and 1000 characters"
     ))]
     pub message: String,
+
+    #[validate(length(min = 1, message = "not valid"))]
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: String,
 }

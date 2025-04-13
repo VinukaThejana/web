@@ -1,13 +1,15 @@
+use std::net::SocketAddr;
+
 use crate::{
     config::state::AppState,
     error::AppError,
     model::contact::ContactUs,
-    util::{AUTHOR_EMAIL, srilankan_time},
+    util::{AUTHOR_EMAIL, cloudflare_verify, srilankan_time},
 };
 use askama::Template;
 use axum::{
     Form,
-    extract::State,
+    extract::{ConnectInfo, State},
     response::{Html, IntoResponse},
 };
 use resend_rs::types::CreateEmailBaseOptions;
@@ -33,6 +35,10 @@ impl<'a> Invalid<'a> {
 }
 
 #[derive(Debug, Default, Template)]
+#[template(path = "components/contact/captcha.html")]
+pub struct CaptchaFailed {}
+
+#[derive(Debug, Default, Template)]
 #[template(path = "components/email/contact.html")]
 pub struct SendEmail<'a> {
     name: &'a str,
@@ -52,10 +58,15 @@ impl<'a> SendEmail<'a> {
 }
 
 pub async fn send_msg(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<ContactUs>,
 ) -> Result<impl IntoResponse, AppError> {
-    log::info!("kasdfksfkdkfakf , received the response ha ha ");
+    let ip = addr.ip().to_string();
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return Ok(Html(CaptchaFailed::default().render().unwrap()));
+    }
+
     if let Err(e) = payload.validate() {
         let message = e
             .field_errors()
