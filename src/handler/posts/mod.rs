@@ -1,9 +1,12 @@
 pub mod home;
 
 use crate::{
-    cache::post::{gck_for_home, gck_for_page, gck_for_slug},
+    cache::{
+        self,
+        post::{gck_for_home, gck_for_page, gck_for_slug},
+    },
     config::{ENV, state::AppState},
-    database::{self, post::get_total_posts},
+    database,
     error::AppError,
     model::post::AddPost,
     util::POST_LIMIT,
@@ -89,7 +92,7 @@ pub async fn add(
     }
     log::info!("post addded");
 
-    let tp = get_total_posts(state.clone(), true).await;
+    let tp = cache::post::gtp(state.clone(), true).await;
     if let Err(e) = tp {
         log::error!("failed to get total posts: {}", e);
         tokio::spawn(async move {

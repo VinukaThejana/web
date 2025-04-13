@@ -1,5 +1,8 @@
 use crate::{
-    cache::post::{gck_for_page, gct_for_page},
+    cache::{
+        self,
+        post::{gck_for_page, gct_for_page},
+    },
     config::state::AppState,
     database::{self, post::Order},
     error::AppError,
@@ -29,7 +32,7 @@ pub async fn paginated(
     State(state): State<AppState>,
     Path(page): Path<u64>,
 ) -> Result<impl IntoResponse, AppError> {
-    let tp = database::post::get_total_posts(state.clone(), false).await?;
+    let tp = cache::post::gtp(state.clone(), false).await?;
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
     let mut blog = BlogPage {
         page,

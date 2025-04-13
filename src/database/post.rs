@@ -98,52 +98,8 @@ pub async fn get_by_slug(
     Ok(post)
 }
 
-pub async fn get_total_posts(state: AppState, force: bool) -> Result<u64, AppError> {
-    let cp = "total-pages";
-
-    if !force {
-        let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
-        let result: Option<u64> = redis::cmd("GET")
-            .arg(gck_for_total())
-            .query_async(&mut conn)
-            .await
-            .map_err(|e| AppError::Other(e.into()))?;
-        if let Some(result) = result {
-            Cache::HIT.log(cp);
-            return Ok(result);
-        }
-
-        Cache::MISS.log(cp);
-    }
-
-    let total_posts = entity::post::Entity::find()
-        .count(&state.db)
-        .await
-        .map_err(AppError::from_database_error)?;
-    tokio::spawn(async move {
-        let conn = state.get_redis_conn().await.map_err(AppError::Other);
-        if let Err(e) = conn {
-            log::error!("failed to aqquire redis connection : {:?}", e);
-            return;
-        }
-        let mut conn = conn.unwrap();
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_total())
-            .arg(total_posts)
-            .arg("EX")
-            .arg(gct_for_total())
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(cp);
-            return;
-        }
-
-        Cache::SET.log(cp);
-    });
-
-    Ok(total_posts)
+pub async fn get_total_posts(db: &DatabaseConnection) -> Result<u64, DbErr> {
+    entity::post::Entity::find().count(db).await
 }
 
 pub async fn add(db: &DatabaseConnection, payload: &AddPost) -> Result<(), DbErr> {
