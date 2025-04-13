@@ -2,7 +2,7 @@ use crate::{
     cache::post::{gck_for_total, gct_for_total},
     config::state::AppState,
     error::AppError,
-    model::post::{AddPost, PartialPost},
+    model::post::{AddPost, PartialPost, PartialPostWithSlug},
     util::{self, Cache},
 };
 use redis::RedisResult;
@@ -12,7 +12,7 @@ use sea_orm::{
 };
 
 pub async fn get(db: &DatabaseConnection) -> Result<Vec<PartialPost>, DbErr> {
-    let posts = entity::post::Entity::find()
+    entity::post::Entity::find()
         .select_only()
         .columns(
             entity::post::Column::iter()
@@ -22,10 +22,21 @@ pub async fn get(db: &DatabaseConnection) -> Result<Vec<PartialPost>, DbErr> {
         .limit(util::POST_LIMIT as u64)
         .into_model::<PartialPost>()
         .all(db)
-        .await?;
-    log::info!("posts: {:?}", posts);
+        .await
+}
 
-    Ok(posts)
+pub async fn get_slugs(db: &DatabaseConnection) -> Result<Vec<PartialPostWithSlug>, DbErr> {
+    entity::post::Entity::find()
+        .select_only()
+        .columns([
+            entity::post::Column::Id,
+            entity::post::Column::Slug,
+            entity::post::Column::Date,
+        ])
+        .order_by_asc(entity::post::Column::Id)
+        .into_model::<PartialPostWithSlug>()
+        .all(db)
+        .await
 }
 
 #[derive(PartialEq)]
