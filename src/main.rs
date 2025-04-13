@@ -79,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
         .nest_service("/assets", tower_http::services::ServeDir::new("assets"))
         .layer(SetResponseHeaderLayer::if_not_present(
             header::CACHE_CONTROL,
-            HeaderValue::from_static("public, max-age=604800"),
+            HeaderValue::from_static("public, max-age=86400"),
         ))
         .layer(
             ServiceBuilder::new()
