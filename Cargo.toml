@@ -44,3 +44,4 @@ validator = { version = "0.20.0", features = ["derive"] }
 words-count = "0.1.6"
 phf = { version = "0.11.3", features = ["macros"] }
 tower_governor = { version = "0.7.0", features = ["axum", "tracing"] }
+reqwest = { version = "0.12.15", features = ["json", "multipart", "rustls-tls"] }
