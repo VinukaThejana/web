@@ -1,7 +1,5 @@
 pub mod home;
 
-use std::net::SocketAddr;
-
 use crate::{
     cache::{
         self,
@@ -21,6 +19,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use redis::RedisResult;
+use std::net::SocketAddr;
 use validator::Validate;
 
 #[derive(Debug, Default, Template)]
@@ -52,6 +51,7 @@ pub async fn add(
     Form(payload): Form<AddPost>,
 ) -> Result<impl IntoResponse, AppError> {
     let ip = addr.ip().to_string();
+
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return Ok(Html(PostCaptchaFailed::default().render().unwrap()));
     }

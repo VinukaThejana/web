@@ -13,6 +13,7 @@
 
 {% block content %}
 <main class="py-12">
+
   <section class="container mx-auto px-4 max-w-3xl">
     <!-- Header -->
     <header class="mb-8 text-center">
@@ -131,9 +132,8 @@
           <button type="submit" hx-trigger="click" hx-post="/api/components/posts/add" hx-target="#post-status"
             hx-swap="innerHTML" hx-disabled-elt="this" hx-indicator="#spinner"
             class="px-4 py-2 bg-[#44475a] text-gray-300 font-medium rounded-md transition font-[JetBrains_Mono]">
-            <i id="spinner" class="htmx-indicator fa-solid fa-spinner animate-spin hidden"></i>
             <span
-              class="text-[#50fa7b]/80">create_post</span><span class="text-gray-300">()</span>
+              class="button-text text-[#50fa7b]/80">create_post</span><span class="text-gray-300">(<i id="spinner" class="htmx-indicator fa-solid fa-spinner animate-spin"></i>)</span>
           </button>
         </div>
       </form>
@@ -148,31 +148,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  // Set current Unix timestamp on "Now" button click
-  document.getElementById('set-current-date').addEventListener('click', () => {
-    const now = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
-    document.getElementById('date').value = now;
-  });
-
-  const updateCounter = (field, counterId, max) => {
-    const value = document.getElementById(field).value;
-    const count = value.length;
-    const counterEl = document.getElementById(counterId);
-    counterEl.textContent = `${count}/${max}`;
-    counterEl.classList.toggle('text-red-500', count > max);
-    counterEl.classList.toggle('text-gray-400', count <= max);
-  };
-
-  updateCounter('summary', 'summary-counter', 160);
-  updateCounter('content', 'content-counter', 100000);
-
-  document.getElementById('summary').addEventListener('input', () => {
-    updateCounter('summary', 'summary-counter', 160);
-  });
-  document.getElementById('content').addEventListener('input', () => {
-    updateCounter('content', 'content-counter', 100000);
-  });
-
+<script src="/assets/js/add-post/add-post.min.js">
 </script>
 {% endblock %}
