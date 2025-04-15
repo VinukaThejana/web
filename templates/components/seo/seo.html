@@ -1,27 +1,32 @@
-<title>{% block title %}{{ title }}{% endblock %} | Backend Development &amp; System Design </title>
 
+{% set seo_title = "Backend Development & System Design" %}
+{% set seo_description = "A developer's blog sharing reflective posts on personal experiences, system design, Rust/Go, to help others navigate their programming journey" %}
+{% set seo_keywords = "backend development, system design, database modeling, performance tuning, Rust programming, Go programming, backend architecture, engineering notes, software development blog, developer experiences, journey into programming" %}
+{% set seo_image = "https://res.cloudinary.com/ddhhebpcx/image/upload/f_auto,q_auto/v1/vinuka.dev/profile/logo" %}
+
+<title>{% block title %}{{ title }}{% endblock %} | {{ seo_title }} </title>
 <meta name="description"
-  content="Notes and insights on backend systems, architecture patterns, and technical solutions from Vinuka Kodituwakku. Practical approaches to real challenges in backend development.">
+  content="{{ seo_description }}">
 <meta name="author" content="{{ crate::util::AUTHOR }}">
 <meta name="keywords"
-  content="backend development, system design, architecture patterns, technical solutions, software engineering, backend systems, rust, golang, vinuka kodituwakku">
+  content="{{ seo_keywords }}">
 
 <!-- Open Graph / Facebook -->
-<meta property="og:title" content="{{ title }} | Backend Development & System Design">
+<meta property="og:title" content="{{ title }} | {{ seo_title }}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="vinuka.dev">
+<meta property="og:url" content="{{ &crate::config::ENV.domain }}">
 <meta property="og:description"
-  content="Notes and insights on backend systems, architecture patterns, and technical solutions from Vinuka Kodituwakku. Practical approaches to real challenges in backend development.">
-<meta property="og:image" content="https://vinuka.dev/assets/images/profile.png">
+  content="{{ seo_description }}">
+<meta property="og:image" content="{{ seo_image }}">
 
 <!-- Twitter -->
 <meta property="twitter:title"
-  content="{{ title }} | Backend Development & System Design">
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="https://vinuka.dev">
+  content="{{ title }} | {{ seo_title }}">
+<meta property="twitter:card" content="summary">
+<meta property="twitter:url" content="{{ &crate::config::ENV.domain }}">
 <meta property="twitter:description"
-  content="Notes and insights on backend systems, architecture patterns, and technical solutions from Vinuka Kodituwakku. Practical approaches to real challenges in backend development.">
-<meta property="twitter:image" content="https://vinuka.dev/assets/images/profile.png">
+  content="{{ seo_description }}">
+<meta property="twitter:image" content="{{ seo_image }}">
 
 <!-- Technical SEO -->
 <meta name="robots" content="index, follow">
@@ -36,16 +41,16 @@
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     "headline": "{{ title }}",
-    "description": "Notes and insights on backend systems, architecture patterns, and technical solutions from Vinuka Kodituwakku.",
+    "description": "{{ seo_description }}",
     "author": {
       "@type": "Person",
-      "name": "Vinuka Kodituwakku",
+      "name": "{{ crate::util::AUTHOR }}",
       "jobTitle": "Backend Developer",
-      "url": "https://vinuka.dev"
+      "url": "{{ &crate::config::ENV.domain }}"
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://vinuka.dev"
+      "@id": "{{ &crate::config::ENV.domain }}"
     }
   }
 </script>

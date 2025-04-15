@@ -26,8 +26,8 @@ async fn main() -> anyhow::Result<()> {
 
     let governer_conf = Arc::new(
         GovernorConfigBuilder::default()
-            .per_second(10)
-            .burst_size(20)
+            .per_second(2)
+            .burst_size(30)
             .finish()
             .unwrap(),
     );
