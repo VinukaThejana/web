@@ -11,7 +11,9 @@ use portfolio::{
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
-use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
+use tower_governor::{
+    GovernorLayer, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor,
+};
 use tower_http::{
     cors::{Any, CorsLayer},
     set_header::SetResponseHeaderLayer,
@@ -27,7 +29,8 @@ async fn main() -> anyhow::Result<()> {
     let governer_conf = Arc::new(
         GovernorConfigBuilder::default()
             .per_second(2)
-            .burst_size(30)
+            .burst_size(50)
+            .key_extractor(SmartIpKeyExtractor)
             .finish()
             .unwrap(),
     );
@@ -90,11 +93,11 @@ async fn main() -> anyhow::Result<()> {
                         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
                         .allow_methods([Method::GET])
                         .allow_origin(Any),
-                )
-                .layer(GovernorLayer {
-                    config: governer_conf,
-                }),
+                ),
         )
+        .layer(GovernorLayer {
+            config: governer_conf,
+        })
         .with_state(state.clone());
 
     info!("up and running on : {}", &ENV.port);
