@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% set title="Too Many Requests" %}
+{% include "components/seo/seo.html" %}
+{% endblock %}
+
+{% block content %}
+<section class="py-16 text-center">
+  <div class="mb-8">
+    <pre
+      class="inline-block text-left text-xs sm:text-sm md:text-base font-mono bg-gray-800 p-4 sm:p-6 rounded-lg overflow-x-auto text-gray-200 w-full">
+      <span class="text-blue-400">use</span> axum::{Router, http::StatusCode, response::IntoResponse};
+
+      <span class="text-blue-400">async fn</span> <span class="text-purple-400">handle_429</span>() -> <span
+        class="text-blue-400">impl</span> IntoResponse {
+      (StatusCode::<span class="text-yellow-300">TOO_MANY_REQUESTS</span>, <span class="text-green-400">"Too many
+        requests - please try again later"</span>)
+      }
+
+      <span class="text-blue-400">let</span> app = Router::<span class="text-purple-400">new</span>()
+      .<span class="text-purple-400">route</span>(<span class="text-green-400">"/"</span>, get(home))
+      .<span class="text-purple-400">layer</span>(tower::limit::RateLimitLayer::new());
+
+      <span class="text-gray-500">// Request to "{window.location.pathname}"</span>
+      <span class="text-red-400">Error</span>: <span class="text-yellow-300">429 Too Many Requests</span>
+      <span class="text-purple-400">trace</span>: router::handle_429 at src/main.rs:53
+    </pre>
+  </div>
+
+  <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-white">429 - Too Many Requests</h1>
+  <p class="text-gray-400 mb-8 text-sm sm:text-base">
+    You've sent too many requests in a short time. Please wait {{ wait_time }} seconds and try again.
+  </p>
+
+  <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+    <a href="javascript:history.back()"
+      class="px-4 py-2 sm:px-6 sm:py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md transition text-sm sm:text-base">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
+    </a>
+    <a href="/"
+      class="px-4 py-2 sm:px-6 sm:py-3 bg-green-600 hover:bg-green-500 text-white rounded-md transition text-sm sm:text-base">
+      <i class="fa-solid fa-home mr-2"></i> Back to Home
+    </a>
+  </div>
+
+  <div class="text-gray-400 font-mono text-sm">
+    <p class="mb-2">// Explore these while you wait?</p>
+    <ul class="space-y-1">
+      <li><a href="/#latest-articles" class="text-green-400 hover:underline">→ Latest articles</a></li>
+      <li><a href="/about#project-showcase" class="text-green-400 hover:underline">→ Projects showcase</a></li>
+      <li><a href="/about#about-me" class="text-green-400 hover:underline">→ About me</a></li>
+    </ul>
+  </div>
+</section>
+
+{% call super() %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
