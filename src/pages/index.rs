@@ -26,12 +26,12 @@ impl<'a> Social<'a> {
 
 #[derive(Template)]
 #[template(path = "index.html")]
-pub struct Index {
+pub struct Tmpl {
     pub socials: Vec<Social<'static>>,
     pub posts: Vec<Post>,
     pub has_more: bool,
 }
-impl Default for Index {
+impl Default for Tmpl {
     fn default() -> Self {
         let socials: Vec<Social> = vec![
             Social::new("GitHub", SOCIALS.get("git").unwrap(), "fa-github"),
@@ -48,7 +48,7 @@ impl Default for Index {
         }
     }
 }
-impl Index {
+impl Tmpl {
     pub async fn new(posts: Vec<Post>) -> Self {
         let has_posts = posts.len() == util::POST_LIMIT;
 
@@ -67,7 +67,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
     if let Err(e) = conn {
         log::error!("failed to get redis connection : {:?}", e);
-        return Ok(Html(Index::default().render().unwrap()));
+        return Ok(Html(Tmpl::default().render().unwrap()));
     }
     let mut conn = conn.unwrap();
     let payload: Option<String> = redis::cmd("GET")
@@ -78,7 +78,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     if let Some(payload) = payload {
         Cache::HIT.log(&ck);
         let posts = from_cache(&payload);
-        return Ok(Html(Index::new(posts).await.render().unwrap()));
+        return Ok(Html(Tmpl::new(posts).await.render().unwrap()));
     }
 
     Cache::MISS.log(&ck);
@@ -106,5 +106,5 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         Cache::SET.log(&ck);
     });
 
-    Ok(Html(Index::new(posts).await.render().unwrap()))
+    Ok(Html(Tmpl::new(posts).await.render().unwrap()))
 }

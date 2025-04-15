@@ -3,8 +3,8 @@ use axum::response::{Html, IntoResponse};
 
 #[derive(Debug, Default, Template)]
 #[template(path = "add-post.html")]
-pub struct AddPost {}
+pub struct Tmpl {}
 
 pub async fn render() -> impl IntoResponse {
-    Html(AddPost::default().render().unwrap())
+    Html(Tmpl::default().render().unwrap())
 }

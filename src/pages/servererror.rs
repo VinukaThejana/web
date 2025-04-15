@@ -3,8 +3,8 @@ use axum::response::{Html, IntoResponse};
 
 #[derive(Debug, Template, Default)]
 #[template(path = "500.html")]
-pub struct InternalServerError {}
+pub struct Tmpl {}
 
 pub async fn render() -> impl IntoResponse {
-    Html(InternalServerError::default().render().unwrap())
+    Html(Tmpl::default().render().unwrap())
 }

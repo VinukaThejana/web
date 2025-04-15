@@ -4,16 +4,19 @@ use axum::response::{Html, IntoResponse};
 
 #[derive(Debug, Template, Default)]
 #[template(path = "429.html")]
-pub struct TooManyRequests {
+pub struct Tmpl {
     wait_time: u64,
 }
+impl Tmpl {
+    pub fn new(wait_time: u64) -> Self {
+        Self { wait_time }
+    }
+}
 
-pub fn render(wait_time: u64) -> impl IntoResponse {
-    let template = TooManyRequests { wait_time };
-
+pub async fn render(wait_time: u64) -> impl IntoResponse {
     (
         StatusCode::TOO_MANY_REQUESTS,
         [(header::CONTENT_TYPE, "text/html")],
-        Html(template.render().unwrap()),
+        Html(Tmpl::new(wait_time).render().unwrap()),
     )
 }

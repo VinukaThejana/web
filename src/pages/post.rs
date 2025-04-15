@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Template, Default)]
 #[template(path = "post.html")]
-pub struct Post<'a> {
+pub struct Tmpl<'a> {
     pub title: &'a str,
     pub image_url: &'a str,
     pub summary: &'a str,
@@ -90,7 +90,7 @@ pub async fn render(
         }
 
         let post_cache = PostCache::from_cache(&content);
-        let post = Post {
+        let post = Tmpl {
             title: &post_cache.title,
             image_url: &post_cache.image_url,
             summary: &post_cache.summary,
@@ -150,7 +150,7 @@ pub async fn render(
         Cache::SET.log(&ck);
     });
 
-    let post = Post {
+    let post = Tmpl {
         title: &post.title,
         image_url: &post.image_url,
         summary: &post.summary,

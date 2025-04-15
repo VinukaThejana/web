@@ -1,3 +1,4 @@
+use crate::pages::{notfound, servererror};
 use askama::Template;
 use axum::{
     http::StatusCode,
@@ -6,8 +7,6 @@ use axum::{
 use sea_orm::{DbErr, RuntimeErr};
 use std::fmt::Display;
 use validator::ValidationErrors;
-
-use crate::pages::{notfound::NotFound, servererror::InternalServerError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
@@ -97,7 +96,7 @@ impl IntoResponse for AppError {
                 log::error!("not found error: {:?}", error);
                 (
                     StatusCode::NOT_FOUND,
-                    Html(NotFound::default().render().unwrap()),
+                    Html(notfound::Tmpl::default().render().unwrap()),
                 )
                     .into_response()
             }
@@ -124,7 +123,7 @@ impl IntoResponse for AppError {
                 log::error!("internal server error: {:?}", error);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    Html(InternalServerError::default().render().unwrap()),
+                    Html(servererror::Tmpl::default().render().unwrap()),
                 )
                     .into_response()
             }

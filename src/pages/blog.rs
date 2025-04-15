@@ -18,7 +18,7 @@ use redis::RedisResult;
 
 #[derive(Debug, Default, Template)]
 #[template(path = "blog-static.html")]
-pub struct BlogPage {
+pub struct Tmpl {
     pub page: u64,
     pub total_pages: u64,
     pub posts: Vec<Post>,
@@ -30,7 +30,7 @@ pub async fn paginated(
 ) -> Result<impl IntoResponse, AppError> {
     let tp = cache::post::gtp(state.clone(), false).await?;
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
-    let mut blog = BlogPage {
+    let mut blog = Tmpl {
         page,
         total_pages: tp,
         ..Default::default()

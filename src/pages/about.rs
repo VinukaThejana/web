@@ -15,7 +15,7 @@ use redis::RedisResult;
 
 #[derive(Debug, Template, Default)]
 #[template(path = "about.html")]
-pub struct About {
+pub struct Tmpl {
     pub projects: Vec<Project>,
 }
 
@@ -23,7 +23,7 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
     let ck = gck_projects();
     let ct = gct_projects();
 
-    let mut about = About::default();
+    let mut about = Tmpl::default();
 
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
     if conn.is_err() {

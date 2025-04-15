@@ -2,13 +2,25 @@ pub mod parser;
 pub mod verify;
 
 use crate::config::{ENV, state::AppState};
+use crate::pages::{ratelimit, servererror};
+use askama::Template;
+use axum::Json;
+use axum::http::StatusCode;
+use axum::http::header;
+use axum::response::{Html, IntoResponse};
 use base64::prelude::*;
 use chrono::{DateTime, FixedOffset, Utc};
+use governor::middleware::NoOpMiddleware;
 use phf::phf_map;
 use reqwest::Client;
 use serde::{Deserialize, Deserializer};
+use serde_json::json;
 use std::{fmt::Display, sync::Arc};
 use tokio::signal;
+use tower_governor::governor::GovernorConfig;
+use tower_governor::{
+    GovernorError, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor,
+};
 use ulid::Ulid;
 
 pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
@@ -178,4 +190,48 @@ pub async fn cloudflare_verify(token: &str, ip: &str) -> bool {
 
     log::info!("cloudflare verification success [ip: {}]", ip);
     true
+}
+
+pub fn governer_conf() -> Arc<GovernorConfig<SmartIpKeyExtractor, NoOpMiddleware>> {
+    Arc::new(
+        GovernorConfigBuilder::default()
+            .per_second(2)
+            .burst_size(100)
+            .key_extractor(SmartIpKeyExtractor)
+            .error_handler(|err: GovernorError| match err {
+                GovernorError::TooManyRequests { wait_time, headers } => {
+                    if headers.is_none() {
+                        return (
+                            StatusCode::TOO_MANY_REQUESTS,
+                            format!("Rate limit exceeded, try again in {} seconds", wait_time),
+                        )
+                            .into_response();
+                    }
+                    let headers = headers.unwrap();
+
+                    let wants_json = headers
+                        .get(header::ACCEPT)
+                        .and_then(|value| value.to_str().ok())
+                        .map(|accept| accept.contains("application/json"))
+                        .unwrap_or(false);
+
+                    if wants_json {
+                        return (
+                            StatusCode::TOO_MANY_REQUESTS,
+                            [(header::CONTENT_TYPE, "application/json")],
+                            Json(json!({
+                                "error": "Rate limit exceeded",
+                                "wait_time": wait_time,
+                            })),
+                        )
+                            .into_response();
+                    }
+
+                    Html(ratelimit::Tmpl::new(wait_time).render().unwrap()).into_response()
+                }
+                _ => Html(servererror::Tmpl::default().render().unwrap()).into_response(),
+            })
+            .finish()
+            .unwrap(),
+    )
 }

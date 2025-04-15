@@ -4,16 +4,17 @@ use axum::{
     http::{HeaderValue, Method, header},
     routing::{get, post},
 };
+use portfolio::util::governer_conf;
 use portfolio::{
     config::{ENV, log, state::AppState},
-    handler, pages, util,
+    handler,
+    pages::{self},
+    util,
 };
-use std::{net::SocketAddr, sync::Arc, time::Duration};
+use std::{net::SocketAddr, time::Duration};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
-use tower_governor::{
-    GovernorLayer, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor,
-};
+use tower_governor::GovernorLayer;
 use tower_http::{
     cors::{Any, CorsLayer},
     set_header::SetResponseHeaderLayer,
@@ -26,23 +27,15 @@ async fn main() -> anyhow::Result<()> {
     log::setup();
     let state = AppState::new().await;
 
-    let governer_conf = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(2)
-            .burst_size(50)
-            .key_extractor(SmartIpKeyExtractor)
-            .finish()
-            .unwrap(),
-    );
-    let governer_limiter = governer_conf.limiter().clone();
+    let governer_conf = governer_conf();
+    let limiter = governer_conf.limiter().clone();
     let interval = Duration::from_secs(60);
-
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(interval);
         loop {
             interval.tick().await;
-            info!("rate limiting storage size: {}", governer_limiter.len());
-            governer_limiter.retain_recent();
+            info!("rate limiting storage size: {}", limiter.len());
+            limiter.retain_recent();
         }
     });
 
@@ -91,7 +84,7 @@ async fn main() -> anyhow::Result<()> {
                 .layer(
                     CorsLayer::new()
                         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
-                        .allow_methods([Method::GET])
+                        .allow_methods([Method::GET, Method::POST])
                         .allow_origin(Any),
                 ),
         )
