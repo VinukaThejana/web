@@ -92,6 +92,11 @@ impl From<AppError> for JsonError {
         JsonError(value)
     }
 }
+impl From<ValidationErrors> for JsonError {
+    fn from(err: ValidationErrors) -> Self {
+        JsonError(AppError::Validation(err))
+    }
+}
 
 impl IntoResponse for HtmlError {
     fn into_response(self) -> Response {
