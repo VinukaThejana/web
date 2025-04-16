@@ -1,10 +1,12 @@
 use crate::pages::{notfound, servererror};
 use askama::Template;
 use axum::{
+    Json,
     http::StatusCode,
     response::{Html, IntoResponse, Response},
 };
 use sea_orm::{DbErr, RuntimeErr};
+use serde_json::json;
 use std::fmt::Display;
 use validator::ValidationErrors;
 
@@ -89,10 +91,24 @@ impl AppError {
     }
 }
 
-impl IntoResponse for AppError {
+pub struct HtmlError(pub AppError);
+impl From<AppError> for HtmlError {
+    fn from(value: AppError) -> Self {
+        HtmlError(value)
+    }
+}
+
+pub struct JsonError(pub AppError);
+impl From<AppError> for JsonError {
+    fn from(value: AppError) -> Self {
+        JsonError(value)
+    }
+}
+
+impl IntoResponse for HtmlError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound(error) => {
+        match self.0 {
+            AppError::NotFound(error) => {
                 log::error!("not found error: {:?}", error);
                 (
                     StatusCode::NOT_FOUND,
@@ -100,26 +116,26 @@ impl IntoResponse for AppError {
                 )
                     .into_response()
             }
-            Self::BadRequest(error) => {
+            AppError::BadRequest(error) => {
                 log::error!("bad request error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::UniqueViolation(error) => {
+            AppError::UniqueViolation(error) => {
                 log::error!("unique violation error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::Unauthorized(error) => {
+            AppError::Unauthorized(error) => {
                 log::error!("unauthorized error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::Validation(validation_errors) => {
+            AppError::Validation(validation_errors) => {
                 log::error!(
                     "validation error: {}",
                     AppError::Validation(validation_errors)
                 );
-                todo!()
+                unimplemented!()
             }
-            Self::Other(error) => {
+            AppError::Other(error) => {
                 log::error!("internal server error: {:?}", error);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -128,6 +144,43 @@ impl IntoResponse for AppError {
                     .into_response()
             }
         }
+    }
+}
+
+impl IntoResponse for JsonError {
+    fn into_response(self) -> Response {
+        let (status, message) = match self.0 {
+            AppError::NotFound(error) => {
+                log::error!("not found error: {:?}", error);
+                (StatusCode::NOT_FOUND, String::from("not found"))
+            }
+            AppError::BadRequest(error) => {
+                log::error!("bad request error: {:?}", error);
+                (StatusCode::BAD_REQUEST, String::from("bad request"))
+            }
+            AppError::UniqueViolation(error) => {
+                log::error!("unique violation error: {:?}", error);
+                (StatusCode::BAD_REQUEST, String::from("unique violation"))
+            }
+            AppError::Unauthorized(error) => {
+                log::error!("unauthorized error: {:?}", error);
+                (StatusCode::UNAUTHORIZED, String::from("unauthorized"))
+            }
+            AppError::Validation(ve) => {
+                let ve = AppError::Validation(ve);
+                log::error!("validation errors : {}", ve);
+                (StatusCode::BAD_REQUEST, format!("{ve}"))
+            }
+            AppError::Other(error) => {
+                log::error!("internal server error: {:?}", error);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    String::from("internal server error"),
+                )
+            }
+        };
+
+        (status, Json(json!({ "status": message }))).into_response()
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::{
     config::state::AppState,
     database::{self, post::Order},
-    error::AppError,
+    error::HtmlError,
     model::post::{Post, ToPosts},
     util,
 };
@@ -31,7 +31,7 @@ pub struct Payload {
 pub async fn load_more(
     State(state): State<AppState>,
     Form(payload): Form<Payload>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let page = payload.validate().map(|_| payload.page).unwrap_or(1);
     let mut load_more = LoadMore::default();
 

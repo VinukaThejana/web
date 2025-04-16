@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use crate::{
     config::state::AppState,
-    error::AppError,
+    error::HtmlError,
     model::contact::ContactUs,
     util::{AUTHOR_EMAIL, cloudflare_verify, srilankan_time},
 };
@@ -61,7 +61,7 @@ pub async fn send_msg(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<ContactUs>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let ip = addr.ip().to_string();
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return Ok(Html(CaptchaFailed::default().render().unwrap()));

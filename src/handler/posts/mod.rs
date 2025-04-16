@@ -7,7 +7,7 @@ use crate::{
     },
     config::{ENV, state::AppState},
     database,
-    error::AppError,
+    error::{AppError, HtmlError},
     model::post::AddPost,
     util::{POST_LIMIT, cloudflare_verify},
 };
@@ -49,7 +49,7 @@ pub async fn add(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<AddPost>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {

@@ -2,7 +2,7 @@ use crate::{
     cache::post::{gck_for_home, gct_for_home},
     config::state::AppState,
     database,
-    error::AppError,
+    error::{AppError, HtmlError},
     model::post::{Post, ToPosts},
     util::{self, Cache, SOCIALS, from_cache, to_cache},
 };
@@ -60,7 +60,7 @@ impl Tmpl {
     }
 }
 
-pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
     let ck = gck_for_home();
     let ct = gct_for_home();
 

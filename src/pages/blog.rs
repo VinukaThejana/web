@@ -5,7 +5,7 @@ use crate::{
     },
     config::state::AppState,
     database::{self, post::Order},
-    error::AppError,
+    error::{AppError, HtmlError},
     model::post::{Post, ToPosts},
     util::{Cache, POST_LIMIT, from_cache, to_cache},
 };
@@ -27,7 +27,7 @@ pub struct Tmpl {
 pub async fn paginated(
     State(state): State<AppState>,
     Path(page): Path<u64>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let tp = cache::post::gtp(state.clone(), false).await?;
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
     let mut blog = Tmpl {
@@ -39,6 +39,7 @@ pub async fn paginated(
     let ct = gct_for_page();
 
     let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+
     let payload: Option<String> = redis::cmd("GET")
         .arg(&ck)
         .query_async(&mut conn)
@@ -48,10 +49,9 @@ pub async fn paginated(
         Cache::HIT.log(&ck);
         blog.posts = from_cache(&payload);
         if blog.posts.is_empty() {
-            return Err(AppError::NotFound(anyhow::anyhow!(
-                "No posts found for page {}",
-                page
-            )));
+            return Err(
+                AppError::NotFound(anyhow::anyhow!("No posts found for page {}", page)).into(),
+            );
         }
         return Ok(Html(blog.render().unwrap()));
     }
@@ -80,10 +80,7 @@ pub async fn paginated(
     });
 
     if posts.is_empty() {
-        return Err(AppError::NotFound(anyhow::anyhow!(
-            "No posts found for page {}",
-            page
-        )));
+        return Err(AppError::NotFound(anyhow::anyhow!("No posts found for page {}", page)).into());
     }
 
     blog.posts = posts;
