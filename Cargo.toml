@@ -51,3 +51,5 @@ reqwest = { version = "0.12.15", features = [
 ] }
 ulid = "1.2.1"
 governor = "0.8.1"
+aws-sdk-s3 = "1.82.0"
+aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
