@@ -1,6 +1,7 @@
 pub mod contact;
 pub mod newsletter;
 pub mod posts;
+pub mod upload;
 
 use std::fs;
 

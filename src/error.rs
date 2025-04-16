@@ -16,6 +16,7 @@ pub enum AppError {
     BadRequest(#[source] anyhow::Error),
     UniqueViolation(#[source] anyhow::Error),
     Unauthorized(#[source] anyhow::Error),
+    CaptchaFailed(#[source] anyhow::Error),
     Validation(#[from] ValidationErrors),
     Other(#[from] anyhow::Error),
 }
@@ -27,33 +28,20 @@ impl Display for AppError {
             Self::BadRequest(e) => write!(f, "{:?}", e),
             Self::UniqueViolation(e) => write!(f, "{:?}", e),
             Self::Unauthorized(e) => write!(f, "{:?}", e),
+            Self::CaptchaFailed(e) => write!(f, "{:?}", e),
             Self::Validation(e) => {
-                let message =
-                    e.field_errors()
-                        .iter()
-                        .fold(String::new(), |acc, (field, errors)| {
-                            let binding = errors
-                                .iter()
-                                .map(|err| {
-                                    err.message
-                                        .as_ref()
-                                        .map(|msg| msg.to_string())
-                                        .unwrap_or_else(|| String::from("invalid value"))
-                                })
-                                .collect::<Vec<String>>();
-
-                            let fe = binding.first();
-                            if fe.is_none() {
-                                return acc;
-                            }
-                            let fe = fe.unwrap();
-
-                            if acc.is_empty() {
-                                format!(r#""{}": "{}""#, field, fe)
-                            } else {
-                                format!(r#"{}, "{}": "{}""#, acc, field, fe)
-                            }
-                        });
+                let message = e
+                    .field_errors()
+                    .values()
+                    .flat_map(|e| e.iter())
+                    .filter_map(|err| {
+                        err.message
+                            .as_ref()
+                            .map(|msg| msg.to_string())
+                            .or(Some(String::from("invalid value")))
+                    })
+                    .next()
+                    .unwrap_or(String::from("invalid value"));
 
                 write!(f, "{}", message)
             }
@@ -128,6 +116,10 @@ impl IntoResponse for HtmlError {
                 log::error!("unauthorized error: {:?}", error);
                 unimplemented!()
             }
+            AppError::CaptchaFailed(error) => {
+                log::error!("captcha failed error: {:?}", error);
+                unimplemented!()
+            }
             AppError::Validation(validation_errors) => {
                 log::error!(
                     "validation error: {}",
@@ -165,6 +157,10 @@ impl IntoResponse for JsonError {
             AppError::Unauthorized(error) => {
                 log::error!("unauthorized error: {:?}", error);
                 (StatusCode::UNAUTHORIZED, String::from("unauthorized"))
+            }
+            AppError::CaptchaFailed(error) => {
+                log::error!("captcha failed error: {:?}", error);
+                (StatusCode::BAD_REQUEST, String::from("captcha failed"))
             }
             AppError::Validation(ve) => {
                 let ve = AppError::Validation(ve);

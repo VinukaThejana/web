@@ -19,7 +19,7 @@ pub async fn presigned(
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(PostCaptchaFailed::default().render().unwrap()));
+        return Err(AppError::CaptchaFailed(anyhow::anyhow!("captcha failed")).into());
     }
     Ok(())
 }
