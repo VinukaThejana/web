@@ -1,6 +1,6 @@
 use super::ENV;
 use envmode::EnvMode;
-use redis::{Client as RedisClient, RedisError, aio::MultiplexedConnection};
+use redis::aio::MultiplexedConnection;
 use resend_rs::Resend;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::time::Duration;
@@ -9,13 +9,14 @@ use std::time::Duration;
 pub struct AppState {
     pub db: DatabaseConnection,
     pub rs: Resend,
-    pub rd: RedisClient,
+    pub rd: redis::Client,
+    pub s3: aws_sdk_s3::Client,
 }
 
 impl AppState {
     pub async fn get_redis_conn<E>(&self) -> Result<MultiplexedConnection, E>
     where
-        RedisError: Into<E>,
+        redis::RedisError: Into<E>,
     {
         self.rd
             .get_multiplexed_async_connection()
@@ -43,12 +44,27 @@ impl AppState {
         });
 
         let rs = Resend::new(&ENV.resend_api_key);
-        let rd = RedisClient::open(&*ENV.redis_url).unwrap_or_else(|e| {
+        let rd = redis::Client::open(&*ENV.redis_url).unwrap_or_else(|e| {
             log::error!("failed to connect to redis: {:?}", e);
             std::process::exit(1);
         });
 
-        Self { db, rs, rd }
+        let s3 = aws_sdk_s3::Client::new(
+            &aws_config::from_env()
+                .endpoint_url(&*ENV.cloudflare_endpoint)
+                .credentials_provider(aws_sdk_s3::config::Credentials::new(
+                    &*ENV.cloudflare_access_key_id,
+                    &*ENV.cloudflare_access_key_secret,
+                    None,
+                    None,
+                    "R2",
+                ))
+                .region("auto")
+                .load()
+                .await,
+        );
+
+        Self { db, rs, rd, s3 }
     }
 }
 

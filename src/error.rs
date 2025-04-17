@@ -1,10 +1,12 @@
 use crate::pages::{notfound, servererror};
 use askama::Template;
 use axum::{
+    Json,
     http::StatusCode,
     response::{Html, IntoResponse, Response},
 };
 use sea_orm::{DbErr, RuntimeErr};
+use serde_json::json;
 use std::fmt::Display;
 use validator::ValidationErrors;
 
@@ -14,6 +16,7 @@ pub enum AppError {
     BadRequest(#[source] anyhow::Error),
     UniqueViolation(#[source] anyhow::Error),
     Unauthorized(#[source] anyhow::Error),
+    CaptchaFailed(#[source] anyhow::Error),
     Validation(#[from] ValidationErrors),
     Other(#[from] anyhow::Error),
 }
@@ -25,33 +28,20 @@ impl Display for AppError {
             Self::BadRequest(e) => write!(f, "{:?}", e),
             Self::UniqueViolation(e) => write!(f, "{:?}", e),
             Self::Unauthorized(e) => write!(f, "{:?}", e),
+            Self::CaptchaFailed(e) => write!(f, "{:?}", e),
             Self::Validation(e) => {
-                let message =
-                    e.field_errors()
-                        .iter()
-                        .fold(String::new(), |acc, (field, errors)| {
-                            let binding = errors
-                                .iter()
-                                .map(|err| {
-                                    err.message
-                                        .as_ref()
-                                        .map(|msg| msg.to_string())
-                                        .unwrap_or_else(|| String::from("invalid value"))
-                                })
-                                .collect::<Vec<String>>();
-
-                            let fe = binding.first();
-                            if fe.is_none() {
-                                return acc;
-                            }
-                            let fe = fe.unwrap();
-
-                            if acc.is_empty() {
-                                format!(r#""{}": "{}""#, field, fe)
-                            } else {
-                                format!(r#"{}, "{}": "{}""#, acc, field, fe)
-                            }
-                        });
+                let message = e
+                    .field_errors()
+                    .values()
+                    .flat_map(|e| e.iter())
+                    .filter_map(|err| {
+                        err.message
+                            .as_ref()
+                            .map(|msg| msg.to_string())
+                            .or(Some(String::from("invalid value")))
+                    })
+                    .next()
+                    .unwrap_or(String::from("invalid value"));
 
                 write!(f, "{}", message)
             }
@@ -89,10 +79,29 @@ impl AppError {
     }
 }
 
-impl IntoResponse for AppError {
+pub struct HtmlError(pub AppError);
+impl From<AppError> for HtmlError {
+    fn from(value: AppError) -> Self {
+        HtmlError(value)
+    }
+}
+
+pub struct JsonError(pub AppError);
+impl From<AppError> for JsonError {
+    fn from(value: AppError) -> Self {
+        JsonError(value)
+    }
+}
+impl From<ValidationErrors> for JsonError {
+    fn from(err: ValidationErrors) -> Self {
+        JsonError(AppError::Validation(err))
+    }
+}
+
+impl IntoResponse for HtmlError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound(error) => {
+        match self.0 {
+            AppError::NotFound(error) => {
                 log::error!("not found error: {:?}", error);
                 (
                     StatusCode::NOT_FOUND,
@@ -100,26 +109,30 @@ impl IntoResponse for AppError {
                 )
                     .into_response()
             }
-            Self::BadRequest(error) => {
+            AppError::BadRequest(error) => {
                 log::error!("bad request error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::UniqueViolation(error) => {
+            AppError::UniqueViolation(error) => {
                 log::error!("unique violation error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::Unauthorized(error) => {
+            AppError::Unauthorized(error) => {
                 log::error!("unauthorized error: {:?}", error);
-                todo!()
+                unimplemented!()
             }
-            Self::Validation(validation_errors) => {
+            AppError::CaptchaFailed(error) => {
+                log::error!("captcha failed error: {:?}", error);
+                unimplemented!()
+            }
+            AppError::Validation(validation_errors) => {
                 log::error!(
                     "validation error: {}",
                     AppError::Validation(validation_errors)
                 );
-                todo!()
+                unimplemented!()
             }
-            Self::Other(error) => {
+            AppError::Other(error) => {
                 log::error!("internal server error: {:?}", error);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -128,6 +141,47 @@ impl IntoResponse for AppError {
                     .into_response()
             }
         }
+    }
+}
+
+impl IntoResponse for JsonError {
+    fn into_response(self) -> Response {
+        let (status, message) = match self.0 {
+            AppError::NotFound(error) => {
+                log::error!("not found error: {:?}", error);
+                (StatusCode::NOT_FOUND, error.to_string())
+            }
+            AppError::BadRequest(error) => {
+                log::error!("bad request error: {:?}", error);
+                (StatusCode::BAD_REQUEST, error.to_string())
+            }
+            AppError::UniqueViolation(error) => {
+                log::error!("unique violation error: {:?}", error);
+                (StatusCode::BAD_REQUEST, String::from("unique violation"))
+            }
+            AppError::Unauthorized(error) => {
+                log::error!("unauthorized error: {:?}", error);
+                (StatusCode::UNAUTHORIZED, error.to_string())
+            }
+            AppError::CaptchaFailed(error) => {
+                log::error!("captcha failed error: {:?}", error);
+                (StatusCode::BAD_REQUEST, String::from("captcha failed"))
+            }
+            AppError::Validation(ve) => {
+                let ve = AppError::Validation(ve);
+                log::error!("validation errors : {}", ve);
+                (StatusCode::BAD_REQUEST, format!("{ve}"))
+            }
+            AppError::Other(error) => {
+                log::error!("internal server error: {:?}", error);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    String::from("internal server error"),
+                )
+            }
+        };
+
+        (status, Json(json!({ "status": message }))).into_response()
     }
 }
 

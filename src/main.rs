@@ -46,24 +46,30 @@ async fn main() -> anyhow::Result<()> {
         .route("/{social}", get(pages::social::render))
         .route("/posts/{slug}", get(pages::post::render))
         .route("/add-post", get(pages::addpost::render))
+        .route("/upload/cdn", get(pages::cdn::render))
+        .route("/upload/storage", get(pages::storage::render))
         .fallback(pages::notfound::render)
         .nest(
             "/api",
-            Router::new().route("/health", get(handler::health)).nest(
-                "/components",
-                Router::new()
-                    .nest(
-                        "/newsletter",
-                        Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
-                    )
-                    .nest(
-                        "/posts",
-                        Router::new()
-                            .route("/home/load-more", post(handler::posts::home::load_more))
-                            .route("/add", post(handler::posts::add)),
-                    )
-                    .route("/contact/send", post(handler::contact::send_msg)),
-            ),
+            Router::new()
+                .route("/health", get(handler::health))
+                .route("/upload/storage", post(handler::upload::presigned))
+                .route("/upload/cdn", post(handler::upload::cdn))
+                .nest(
+                    "/components",
+                    Router::new()
+                        .nest(
+                            "/newsletter",
+                            Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
+                        )
+                        .nest(
+                            "/posts",
+                            Router::new()
+                                .route("/home/load-more", post(handler::posts::home::load_more))
+                                .route("/add", post(handler::posts::add)),
+                        )
+                        .route("/contact/send", post(handler::contact::send_msg)),
+                ),
         )
         .route("/sitemap.xml", get(handler::site_xml))
         .route("/favicon.ico", get(handler::favicon))

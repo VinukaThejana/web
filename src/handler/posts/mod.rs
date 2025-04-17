@@ -7,7 +7,7 @@ use crate::{
     },
     config::{ENV, state::AppState},
     database,
-    error::AppError,
+    error::{AppError, HtmlError},
     model::post::AddPost,
     util::{POST_LIMIT, cloudflare_verify},
 };
@@ -49,7 +49,7 @@ pub async fn add(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<AddPost>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
@@ -57,20 +57,11 @@ pub async fn add(
     }
 
     if let Err(e) = payload.validate() {
-        let message = e
-            .field_errors()
-            .values()
-            .flat_map(|e| e.iter())
-            .filter_map(|err| {
-                err.message
-                    .as_ref()
-                    .map(|msg| msg.to_string())
-                    .or(Some(String::from("invalid value")))
-            })
-            .next()
-            .unwrap_or(String::from("invalid value"));
-
-        return Ok(Html(PostAddInvaid::new(&message).render().unwrap()));
+        return Ok(Html(
+            PostAddInvaid::new(&AppError::Validation(e).to_string())
+                .render()
+                .unwrap(),
+        ));
     }
 
     if payload.password != (*ENV.admin_password) {

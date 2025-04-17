@@ -2,7 +2,7 @@ use crate::{
     cache::post::{gck_for_slug, gct_for_slug},
     config::{ENV, state::AppState},
     database,
-    error::AppError,
+    error::{AppError, HtmlError},
     util::{Cache, NON_EXISTENT_KEY, parser::cmark},
 };
 use askama::Template;
@@ -69,7 +69,7 @@ impl From<entity::post::Model> for PostCache {
 pub async fn render(
     Path(slug): Path<String>,
     State(state): State<AppState>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, HtmlError> {
     let ck = gck_for_slug(&slug);
     let ct = gct_for_slug();
 
@@ -83,10 +83,9 @@ pub async fn render(
         Cache::HIT.log(&ck);
 
         if content == NON_EXISTENT_KEY {
-            return Err(AppError::NotFound(anyhow::anyhow!(
-                "post with slug {} not found",
-                slug
-            )));
+            return Err(
+                AppError::NotFound(anyhow::anyhow!("post with slug {} not found", slug)).into(),
+            );
         }
 
         let post_cache = PostCache::from_cache(&content);
@@ -123,7 +122,7 @@ pub async fn render(
         });
 
         log::error!("post not found: {:?}", e);
-        return Err(AppError::NotFound(e.into()));
+        return Err(AppError::NotFound(e.into()).into());
     }
 
     let post = post.unwrap();

@@ -1,6 +1,7 @@
 pub mod contact;
 pub mod newsletter;
 pub mod posts;
+pub mod upload;
 
 use std::fs;
 
@@ -16,7 +17,7 @@ use serde_json::json;
 use crate::{
     cache::{self},
     config::{ENV, state::AppState},
-    error::AppError,
+    error::HtmlError,
     model::post::PartialPostWithSlug,
     util::{self, POST_LIMIT},
 };
@@ -162,7 +163,7 @@ impl ToEntry for Vec<PartialPostWithSlug> {
     }
 }
 
-pub async fn site_xml(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+pub async fn site_xml(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
     // NOTE: when changing these pages, make sure to update the last modified date
     let mut urls = vec![
         UrlEntry::new("/", "2025-04-13", "monthly", "1.0"),
