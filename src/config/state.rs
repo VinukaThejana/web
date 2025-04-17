@@ -51,10 +51,10 @@ impl AppState {
 
         let s3 = aws_sdk_s3::Client::new(
             &aws_config::from_env()
-                .endpoint_url(&*ENV.cloudinary_endpoint)
+                .endpoint_url(&*ENV.cloudflare_endpoint)
                 .credentials_provider(aws_sdk_s3::config::Credentials::new(
-                    &*ENV.cloudinary_access_key_id,
-                    &*ENV.cloudinary_access_key_secret,
+                    &*ENV.cloudflare_access_key_id,
+                    &*ENV.cloudflare_access_key_secret,
                     None,
                     None,
                     "R2",

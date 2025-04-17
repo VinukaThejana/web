@@ -1,9 +1,11 @@
 pub mod about;
 pub mod addpost;
 pub mod blog;
+pub mod cdn;
 pub mod index;
 pub mod notfound;
 pub mod post;
 pub mod ratelimit;
 pub mod servererror;
 pub mod social;
+pub mod storage;

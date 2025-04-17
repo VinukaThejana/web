@@ -149,11 +149,11 @@ impl IntoResponse for JsonError {
         let (status, message) = match self.0 {
             AppError::NotFound(error) => {
                 log::error!("not found error: {:?}", error);
-                (StatusCode::NOT_FOUND, String::from("not found"))
+                (StatusCode::NOT_FOUND, error.to_string())
             }
             AppError::BadRequest(error) => {
                 log::error!("bad request error: {:?}", error);
-                (StatusCode::BAD_REQUEST, String::from("bad request"))
+                (StatusCode::BAD_REQUEST, error.to_string())
             }
             AppError::UniqueViolation(error) => {
                 log::error!("unique violation error: {:?}", error);
@@ -161,7 +161,7 @@ impl IntoResponse for JsonError {
             }
             AppError::Unauthorized(error) => {
                 log::error!("unauthorized error: {:?}", error);
-                (StatusCode::UNAUTHORIZED, String::from("unauthorized"))
+                (StatusCode::UNAUTHORIZED, error.to_string())
             }
             AppError::CaptchaFailed(error) => {
                 log::error!("captcha failed error: {:?}", error);
