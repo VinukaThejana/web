@@ -55,23 +55,35 @@ pub struct Env {
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
-    pub cloudinary_token_value: Arc<str>,
+    pub cloudflare_token_value: Arc<str>,
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
-    pub cloudinary_access_key_id: Arc<str>,
+    pub cloudflare_access_key_id: Arc<str>,
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
-    pub cloudinary_access_key_secret: Arc<str>,
+    pub cloudflare_access_key_secret: Arc<str>,
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
-    pub cloudinary_endpoint: Arc<str>,
+    pub cloudflare_endpoint: Arc<str>,
 
     #[validate(length(min = 1, message = "must not be empty"))]
     #[serde(deserialize_with = "util::deserialize_arc_str")]
-    pub cloudinary_bucket_name: Arc<str>,
+    pub cloudflare_bucket_name: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub cloudinary_cloud_name: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub cloudinary_api_key: Arc<str>,
+
+    #[validate(length(min = 1, message = "must not be empty"))]
+    #[serde(deserialize_with = "util::deserialize_arc_str")]
+    pub cloudinary_api_secret: Arc<str>,
 
     #[validate(range(min = 8080, max = 8090, message = "must be between 8080 and 8090"))]
     pub port: u16,
