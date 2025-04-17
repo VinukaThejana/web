@@ -45,6 +45,8 @@ pub const POST_LIMIT: usize = 10;
 
 pub const NON_EXISTENT_KEY: &str = "non-existent-post";
 
+pub const IMG_EXTENSIONS: [&str; 6] = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"];
+
 pub async fn shutdown(state: AppState) {
     let ctrl_c = async {
         signal::ctrl_c().await.unwrap_or_else(|_| {
