@@ -1,3 +1,4 @@
+pub mod aws_object;
 pub mod cdn;
 pub mod contact;
 pub mod newsletter;

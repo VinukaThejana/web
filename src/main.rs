@@ -46,15 +46,24 @@ async fn main() -> anyhow::Result<()> {
         .route("/{social}", get(pages::social::render))
         .route("/posts/{slug}", get(pages::post::render))
         .route("/add-post", get(pages::addpost::render))
-        .route("/upload/cdn", get(pages::cdn::render))
-        .route("/upload/storage", get(pages::storage::render))
+        .nest(
+            "/upload",
+            Router::new()
+                .route("/storage", get(pages::upload::storage::render))
+                .route("/cdn", get(pages::upload::cdn::render))
+                .route("/list", get(pages::upload::list::render)),
+        )
         .fallback(pages::notfound::render)
         .nest(
             "/api",
             Router::new()
                 .route("/health", get(handler::health))
-                .route("/upload/storage", post(handler::upload::presigned))
-                .route("/upload/cdn", post(handler::upload::cdn))
+                .nest(
+                    "/upload",
+                    Router::new()
+                        .route("/storage", post(handler::upload::presigned))
+                        .route("/cdn", post(handler::upload::cdn)),
+                )
                 .nest(
                     "/components",
                     Router::new()
