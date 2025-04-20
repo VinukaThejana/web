@@ -1,23 +1,20 @@
 {% extends "layout.html" %}
 
 {% macro link(name) %}
-
 <a href="/upload/{{ name }}"
 {% if &active == name %}
-    class="px-4 py-2 rounded-xl border transition-all duration-300 bg-green-400 text-gray-900 font-semibold shadow-lg"
+    class="px-4 py-2 rounded-lg border border-[#50fa7b]/50 bg-[#50fa7b] text-gray-900 font-semibold shadow-md hover:shadow-lg transition-all duration-300"
 {% else %}
-    class="px-4 py-2 rounded-xl border transition-all duration-300 bg-gray-800 border-[#44475a] text-gray-300 hover:bg-gray-700"
+    class="px-4 py-2 rounded-lg border border-[#44475a] bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-[#50fa7b]/50 transition-all duration-300"
 {% endif %}
 >
-  <span class="text-[#ff79c6]">{{ name }}</span>
+  <span class="text-[#ff79c6] font-[JetBrains_Mono]">{{ name }}</span>
 </a>
-
 {% endmacro %}
 
 {% block content %}
 <section class="container mx-auto px-4 max-w-3xl py-12">
-
-  <div class="flex justify-center sm:justify-start overflow-x-auto mb-8 space-x-2 font-[JetBrains_Mono] text-sm px-1">
+  <div class="flex justify-center sm:justify-start overflow-x-auto mb-8 space-x-2 font-[JetBrains_Mono] text-sm">
     {% call link(name = "cdn") %}
     {% call link(name = "storage") %}
     {% call link(name = "list") %}
