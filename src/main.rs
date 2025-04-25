@@ -53,6 +53,10 @@ async fn main() -> anyhow::Result<()> {
                 .route("/cdn", get(pages::upload::cdn::render))
                 .route("/list", get(pages::upload::list::render)),
         )
+        .nest(
+            "/short",
+            Router::new().route("/add", get(pages::short::add::render)),
+        )
         .fallback(pages::notfound::render)
         .nest(
             "/api",
@@ -76,6 +80,10 @@ async fn main() -> anyhow::Result<()> {
                             Router::new()
                                 .route("/home/load-more", post(handler::posts::home::load_more))
                                 .route("/add", post(handler::posts::add)),
+                        )
+                        .nest(
+                            "/short",
+                            Router::new().route("/verify", post(handler::short::verify)),
                         )
                         .route("/contact/send", post(handler::contact::send_msg)),
                 ),

@@ -6,5 +6,6 @@ pub mod notfound;
 pub mod post;
 pub mod ratelimit;
 pub mod servererror;
+pub mod short;
 pub mod social;
 pub mod upload;
