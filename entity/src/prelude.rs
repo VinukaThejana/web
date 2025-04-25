@@ -2,3 +2,4 @@
 
 pub use super::post::Entity as Post;
 pub use super::project::Entity as Project;
+pub use super::short::Entity as Short;
