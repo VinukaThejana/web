@@ -83,7 +83,9 @@ async fn main() -> anyhow::Result<()> {
                         )
                         .nest(
                             "/short",
-                            Router::new().route("/verify", post(handler::short::verify)),
+                            Router::new()
+                                .route("/verify", post(handler::short::verify))
+                                .route("/add", post(handler::short::add)),
                         )
                         .route("/contact/send", post(handler::contact::send_msg)),
                 ),
