@@ -9,6 +9,7 @@ enum Short {
     Id,
     LongUrl,
     Key,
+    Views,
     Description,
     CreatedAt,
 }
@@ -27,6 +28,7 @@ impl MigrationTrait for Migration {
                     .col(string(Short::LongUrl))
                     .col(string(Short::Key).unique_key())
                     .col(string(Short::Description))
+                    .col(integer(Short::Views).extra("DEFAULT 0"))
                     .col(date_time(Short::CreatedAt).extra("DEFAULT CURRENT_TIMESTAMP"))
                     .to_owned(),
             )
