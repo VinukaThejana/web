@@ -11,6 +11,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub key: String,
     pub description: String,
+    pub views: i32,
     pub created_at: DateTime,
 }
 

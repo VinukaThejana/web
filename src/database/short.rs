@@ -1,3 +1,4 @@
+use prelude::Expr;
 use sea_orm::{DatabaseConnection, DbErr, EntityTrait, QueryFilter, QuerySelect, entity::*};
 
 pub async fn is_key_valid(db: &DatabaseConnection, key: &str) -> Result<bool, DbErr> {
@@ -23,6 +24,29 @@ pub async fn add(
         ..Default::default()
     };
     short.insert(db).await?;
+
+    Ok(())
+}
+
+pub async fn get(db: &DatabaseConnection, key: &str) -> Result<entity::short::Model, DbErr> {
+    let short = entity::short::Entity::find()
+        .filter(entity::short::Column::Key.eq(key))
+        .one(db)
+        .await?;
+    let short = short.ok_or(DbErr::RecordNotFound(String::from("short not found")))?;
+
+    Ok(short)
+}
+
+pub async fn increase_views(db: &DatabaseConnection, key: &str) -> Result<(), DbErr> {
+    entity::short::Entity::update_many()
+        .col_expr(
+            entity::short::Column::Views,
+            Expr::col(entity::short::Column::Views).add(1),
+        )
+        .filter(entity::short::Column::Key.eq(key))
+        .exec(db)
+        .await?;
 
     Ok(())
 }
