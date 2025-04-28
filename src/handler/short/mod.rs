@@ -2,7 +2,7 @@ use crate::{
     config::{ENV, state::AppState},
     database,
     error::{AppError, HtmlError},
-    model::short::{AddShort, ShortKey},
+    model::short::{AddShort, DelShort, ShortKey},
     util::cloudflare_verify,
 };
 use askama::Template;
@@ -71,42 +71,44 @@ pub async fn verify(
 }
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/short/success.html")]
-pub struct AddOkay {}
+#[template(path = "components/short/captcha.html")]
+pub struct Captcha {}
 
 #[derive(Debug, Default, Template)]
 #[template(path = "components/short/invalid.html")]
-pub struct AddInvalid<'a> {
+pub struct Invalid<'a> {
+    pub form_id: &'a str,
     pub message: &'a str,
 }
-impl<'a> AddInvalid<'a> {
-    pub fn new(message: &'a str) -> Self {
-        Self { message }
+impl<'a> Invalid<'a> {
+    pub fn new(form_id: &'a str, message: &'a str) -> Self {
+        Self { form_id, message }
     }
 }
 
 #[derive(Debug, Default, Template)]
 #[template(path = "components/short/failed.html")]
-pub struct AddFailed {}
+pub struct Failed {}
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/short/captcha.html")]
-pub struct AddCaptcha {}
+#[template(path = "components/short/add-success.html")]
+pub struct AddOkay {}
 
 pub async fn add(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     Form(payload): Form<AddShort>,
 ) -> Result<impl IntoResponse, HtmlError> {
+    let form_id = "shorten-link-form";
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(AddCaptcha::default().render().unwrap()));
+        return Ok(Html(Captcha::default().render().unwrap()));
     }
 
     if let Err(e) = payload.validate() {
         return Ok(Html(
-            AddInvalid::new(&AppError::Validation(e).to_string())
+            Invalid::new(form_id, &AppError::Validation(e).to_string())
                 .render()
                 .unwrap(),
         ));
@@ -114,7 +116,9 @@ pub async fn add(
 
     if payload.password != (*ENV.admin_password) {
         return Ok(Html(
-            AddInvalid::new("password is incorrect").render().unwrap(),
+            Invalid::new(form_id, "password is incorrect")
+                .render()
+                .unwrap(),
         ));
     }
 
@@ -131,12 +135,66 @@ pub async fn add(
         match e {
             AppError::UniqueViolation(_) => {
                 return Ok(Html(
-                    AddInvalid::new("key is already in use").render().unwrap(),
+                    Invalid::new(form_id, "key is already in use")
+                        .render()
+                        .unwrap(),
                 ));
             }
-            _ => return Ok(Html(AddFailed::default().render().unwrap())),
+            _ => return Ok(Html(Failed::default().render().unwrap())),
         }
     }
 
     Ok(Html(AddOkay::default().render().unwrap()))
+}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/short/del-success.html")]
+pub struct DelOkay {}
+
+pub async fn delete(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    Form(payload): Form<DelShort>,
+) -> Result<impl IntoResponse, HtmlError> {
+    let form_id = "del-link-form";
+    let ip = addr.ip().to_string();
+
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return Ok(Html(Captcha::default().render().unwrap()));
+    }
+
+    if let Err(e) = payload.validate() {
+        return Ok(Html(
+            Invalid::new(form_id, &AppError::Validation(e).to_string())
+                .render()
+                .unwrap(),
+        ));
+    }
+
+    if payload.password != (*ENV.admin_password) {
+        return Ok(Html(
+            Invalid::new(form_id, "password is incorrect")
+                .render()
+                .unwrap(),
+        ));
+    }
+
+    if let Err(e) = database::short::delete(&state.db, &payload.key)
+        .await
+        .map_err(AppError::from_database_error)
+    {
+        log::error!("failed to delete key from the database: {}", e);
+        match e {
+            AppError::NotFound(_) => {
+                return Ok(Html(
+                    Invalid::new(form_id, "key is not found").render().unwrap(),
+                ));
+            }
+            _ => {
+                return Ok(Html(Failed::default().render().unwrap()));
+            }
+        }
+    }
+
+    Ok(Html(DelOkay::default().render().unwrap()))
 }

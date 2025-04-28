@@ -55,7 +55,10 @@ async fn main() -> anyhow::Result<()> {
         )
         .nest(
             "/short",
-            Router::new().route("/add", get(pages::short::add::render)),
+            Router::new()
+                .route("/add", get(pages::short::add::render))
+                .route("/del", get(pages::short::del::render))
+                .route("/list", get(pages::short::list::render)),
         )
         .fallback(pages::notfound::render)
         .nest(
@@ -85,7 +88,8 @@ async fn main() -> anyhow::Result<()> {
                             "/short",
                             Router::new()
                                 .route("/verify", post(handler::short::verify))
-                                .route("/add", post(handler::short::add)),
+                                .route("/add", post(handler::short::add))
+                                .route("/del", post(handler::short::delete)),
                         )
                         .route("/contact/send", post(handler::contact::send_msg)),
                 ),

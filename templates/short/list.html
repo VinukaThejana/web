@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<title>View Links | Backend Development & System Design</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="language" content="English">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+{% endblock %}
+
+{% block content %}
+<main class="py-12">
+  <section class="container mx-auto px-4 max-w-3xl">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2">
+        <span class="text-green-400">fn</span> view_links<span class="text-gray-500 font-[JetBrains_Mono]">
+          () -> </span><span class="text-[#ff79c6]">
+          Vec&lt;Link&gt;
+        </span><span class="text-gray-500 font-[JetBrains_Mono]">
+        </span>
+      </h1>
+      <p class="text-gray-300 text-md max-w-xl mx-auto">
+        <span class="text-[#6272a4] font-[JetBrains_Mono] hidden sm:inline">/// </span>
+        Explore all shortened links with their titles, URLs, descriptions, and view counts.
+      </p>
+    </header>
+
+    <!-- Links Container -->
+    <div class="space-y-6">
+      {% if links.len() != 0 %}
+      {% for link in links %}
+      <div class="bg-gray-800 p-6 rounded-lg border border-[#44475a] transition hover:shadow-md hover:bg-gray-700">
+        <div class="flex flex-col space-y-4">
+          <!-- Title -->
+          <div>
+            <h3 class="text-sm font-medium text-[#ff79c6]/80 font-[JetBrains_Mono]">
+              title: <span class="text-[#50fa7b]/80">String</span>
+            </h3>
+            <p class="text-gray-300 font-[JetBrains_Mono]">
+              {{ link.description }}
+            </p>
+          </div>
+          <!-- Shortened URL -->
+          <div>
+            <h3 class="text-sm font-medium text-[#ff79c6]/80 font-[JetBrains_Mono]">
+              short_url: <span class="text-[#50fa7b]/80">String</span>
+            </h3>
+            <a href="{{ &crate::config::ENV.domain }}/{{ link.key }}"
+              class="text-green-400 hover:text-[#50fa7b] font-[JetBrains_Mono] underline transition" target="_blank">
+              {{ link.key }}
+            </a>
+          </div>
+          <!-- Description -->
+          <div>
+            <h3 class="text-sm font-medium text-[#ff79c6]/80 font-[JetBrains_Mono]">
+              description: <span class="text-[#50fa7b]/80">String</span>
+            </h3>
+            <p class="text-gray-300 font-[JetBrains_Mono]">
+              {{ link.description }}
+            </p>
+          </div>
+          <!-- View Count -->
+          <div>
+            <h3 class="text-sm font-medium text-[#ff79c6]/80 font-[JetBrains_Mono]">
+              views: <span class="text-[#50fa7b]/80">u64</span>
+            </h3>
+            <p class="text-gray-300 font-[JetBrains_Mono]">
+              {{ link.views }}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="bg-gray-800 p-6 rounded-lg border border-[#44475a] transition hover:shadow-md text-center">
+        <p class="text-gray-300 font-[JetBrains_Mono]">
+          <span class="text-[#6272a4]">/// </span>No links found. Create one using
+          <a href="/short/add" class="text-green-400 hover:text-[#50fa7b] transition">
+            <span class="text-green-400">fn</span> shorten_link()
+          </a>.
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+{% call super() %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/assets/js/view-links/view-links.min.js"></script>
+{% endblock %}

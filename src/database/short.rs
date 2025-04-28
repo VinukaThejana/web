@@ -1,5 +1,7 @@
 use prelude::Expr;
-use sea_orm::{DatabaseConnection, DbErr, EntityTrait, QueryFilter, QuerySelect, entity::*};
+use sea_orm::{
+    DatabaseConnection, DbErr, EntityTrait, QueryFilter, QueryOrder, QuerySelect, entity::*,
+};
 
 pub async fn is_key_valid(db: &DatabaseConnection, key: &str) -> Result<bool, DbErr> {
     let key = entity::short::Entity::find()
@@ -38,12 +40,29 @@ pub async fn get(db: &DatabaseConnection, key: &str) -> Result<entity::short::Mo
     Ok(short)
 }
 
+pub async fn get_all(db: &DatabaseConnection) -> Result<Vec<entity::short::Model>, DbErr> {
+    entity::short::Entity::find()
+        .order_by_desc(entity::short::Column::CreatedAt)
+        .limit(100)
+        .all(db)
+        .await
+}
+
 pub async fn increase_views(db: &DatabaseConnection, key: &str) -> Result<(), DbErr> {
     entity::short::Entity::update_many()
         .col_expr(
             entity::short::Column::Views,
             Expr::col(entity::short::Column::Views).add(1),
         )
+        .filter(entity::short::Column::Key.eq(key))
+        .exec(db)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn delete(db: &DatabaseConnection, key: &str) -> Result<(), DbErr> {
+    entity::short::Entity::delete_many()
         .filter(entity::short::Column::Key.eq(key))
         .exec(db)
         .await?;
