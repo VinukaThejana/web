@@ -2,11 +2,12 @@ use crate::{
     config::{ENV, state::AppState},
     error::{AppError, HtmlError},
     model::aws_object::AwsObject,
+    util::html,
 };
 use askama::Template;
 use axum::{
     extract::{Query, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use serde::Deserialize;
 
@@ -78,9 +79,5 @@ pub async fn render(
             .unwrap_or_default(),
     );
 
-    Ok(Html(
-        Tmpl::new(objects, &next_key, has_next)
-            .render()
-            .map_err(AppError::from_generic_error)?,
-    ))
+    html::render(Tmpl::new(objects, &next_key, has_next))
 }

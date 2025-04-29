@@ -9,13 +9,13 @@ use crate::{
     database,
     error::{AppError, HtmlError},
     model::post::AddPost,
-    util::{POST_LIMIT, cloudflare_verify},
+    util::{POST_LIMIT, cloudflare_verify, html},
 };
 use askama::Template;
 use axum::{
     Form,
     extract::{ConnectInfo, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use chrono::{DateTime, Utc};
 use redis::RedisResult;
@@ -53,29 +53,21 @@ pub async fn add(
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(PostCaptchaFailed::default().render().unwrap()));
+        return html::render(PostCaptchaFailed::default());
     }
 
     if let Err(e) = payload.validate() {
-        return Ok(Html(
-            PostAddInvaid::new(&AppError::Validation(e).to_string())
-                .render()
-                .unwrap(),
-        ));
+        return html::render(PostAddInvaid::new(&AppError::Validation(e).to_string()));
     }
 
     if payload.password != (*ENV.admin_password) {
-        return Ok(Html(
-            PostAddInvaid::new("password is incorrect")
-                .render()
-                .unwrap(),
-        ));
+        return html::render(PostAddInvaid::new("password is incorrect"));
     }
 
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
     if let Err(e) = conn {
         log::error!("failed to get redis connection: {}", e);
-        return Ok(Html(PostAddFailed::default().render().unwrap()));
+        return html::render(PostAddFailed::default());
     }
     let mut conn = conn.unwrap();
 
@@ -84,15 +76,11 @@ pub async fn add(
         .map_err(AppError::from_database_error)
     {
         if let AppError::UniqueViolation(_) = e {
-            return Ok(Html(
-                PostAddInvaid::new("post with this slug already exists")
-                    .render()
-                    .unwrap(),
-            ));
+            return html::render(PostAddInvaid::new("post with this slug already exists"));
         }
 
         log::error!("failed to add post: {}", e);
-        return Ok(Html(PostAddFailed::default().render().unwrap()));
+        return html::render(PostAddFailed::default());
     }
     log::info!("post addded");
 
@@ -110,7 +98,7 @@ pub async fn add(
             }
         });
 
-        return Ok(Html(PostAddFailed::default().render().unwrap()));
+        return html::render(PostAddSuccess::default());
     }
     let tp = tp.unwrap();
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
@@ -148,5 +136,5 @@ pub async fn add(
         }
     });
 
-    Ok(Html(PostAddSuccess::default().render().unwrap()))
+    html::render(PostAddSuccess::default())
 }

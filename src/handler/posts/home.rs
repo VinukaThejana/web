@@ -3,14 +3,10 @@ use crate::{
     database::{self, post::Order},
     error::HtmlError,
     model::post::{Post, ToPosts},
-    util,
+    util::{self, html},
 };
 use askama::Template;
-use axum::{
-    Form,
-    extract::State,
-    response::{Html, IntoResponse},
-};
+use axum::{Form, extract::State, response::IntoResponse};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -45,5 +41,5 @@ pub async fn load_more(
     posts.pop();
     load_more.posts = posts;
 
-    Ok(Html(load_more.render().unwrap()))
+    html::render(load_more)
 }

@@ -3,12 +3,10 @@ use crate::{
     database,
     error::{AppError, HtmlError},
     model::short::{Link, ToLinks},
+    util::html,
 };
 use askama::Template;
-use axum::{
-    extract::State,
-    response::{Html, IntoResponse},
-};
+use axum::{extract::State, response::IntoResponse};
 
 #[derive(Default, Template)]
 #[template(path = "short/list.html")]
@@ -27,5 +25,5 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         .map_err(AppError::from_database_error)?
         .to_links();
 
-    Ok(Html(Tmpl::new(links).render().unwrap()))
+    html::render(Tmpl::new(links))
 }

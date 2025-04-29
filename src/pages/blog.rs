@@ -7,12 +7,12 @@ use crate::{
     database::{self, post::Order},
     error::{AppError, HtmlError},
     model::post::{Post, ToPosts},
-    util::{Cache, POST_LIMIT, from_cache, to_cache},
+    util::{Cache, POST_LIMIT, from_cache, html, to_cache},
 };
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use redis::RedisResult;
 
@@ -53,7 +53,7 @@ pub async fn paginated(
                 AppError::NotFound(anyhow::anyhow!("No posts found for page {}", page)).into(),
             );
         }
-        return Ok(Html(blog.render().unwrap()));
+        return html::render(blog);
     }
 
     Cache::MISS.log(&ck);
@@ -84,5 +84,5 @@ pub async fn paginated(
     }
 
     blog.posts = posts;
-    Ok(Html(blog.render().unwrap()))
+    html::render(blog)
 }

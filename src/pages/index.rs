@@ -4,13 +4,10 @@ use crate::{
     database,
     error::{AppError, HtmlError},
     model::post::{Post, ToPosts},
-    util::{self, Cache, SOCIALS, from_cache, to_cache},
+    util::{self, Cache, SOCIALS, from_cache, html, to_cache},
 };
 use askama::Template;
-use axum::{
-    extract::State,
-    response::{Html, IntoResponse},
-};
+use axum::{extract::State, response::IntoResponse};
 use redis::RedisResult;
 
 pub struct Social<'a> {
@@ -67,7 +64,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     let conn = state.get_redis_conn().await.map_err(AppError::Other);
     if let Err(e) = conn {
         log::error!("failed to get redis connection : {:?}", e);
-        return Ok(Html(Tmpl::default().render().unwrap()));
+        return html::render(Tmpl::default());
     }
     let mut conn = conn.unwrap();
     let payload: Option<String> = redis::cmd("GET")
@@ -78,7 +75,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     if let Some(payload) = payload {
         Cache::HIT.log(&ck);
         let posts = from_cache(&payload);
-        return Ok(Html(Tmpl::new(posts).await.render().unwrap()));
+        return html::render(Tmpl::new(posts).await);
     }
 
     Cache::MISS.log(&ck);
@@ -106,5 +103,5 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         Cache::SET.log(&ck);
     });
 
-    Ok(Html(Tmpl::new(posts).await.render().unwrap()))
+    html::render(Tmpl::new(posts).await)
 }

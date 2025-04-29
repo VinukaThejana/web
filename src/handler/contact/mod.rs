@@ -4,13 +4,13 @@ use crate::{
     config::state::AppState,
     error::{AppError, HtmlError},
     model::contact::ContactUs,
-    util::{AUTHOR_EMAIL, cloudflare_verify, srilankan_time},
+    util::{AUTHOR_EMAIL, cloudflare_verify, html, srilankan_time},
 };
 use askama::Template;
 use axum::{
     Form,
     extract::{ConnectInfo, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use resend_rs::types::CreateEmailBaseOptions;
 use validator::Validate;
@@ -64,15 +64,11 @@ pub async fn send_msg(
 ) -> Result<impl IntoResponse, HtmlError> {
     let ip = addr.ip().to_string();
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(CaptchaFailed::default().render().unwrap()));
+        return html::render(CaptchaFailed::default());
     }
 
     if let Err(e) = payload.validate() {
-        return Ok(Html(
-            Invalid::new(&AppError::Validation(e).to_string())
-                .render()
-                .unwrap(),
-        ));
+        return html::render(Invalid::new(&AppError::Validation(e).to_string()));
     }
 
     let email = CreateEmailBaseOptions::new(
@@ -93,8 +89,8 @@ pub async fn send_msg(
     let result = state.rs.emails.send(email).await;
     if let Err(e) = result {
         log::error!("failed to send email : {:?}", e);
-        return Ok(Html(Failed::default().render().unwrap()));
+        return html::render(Failed::default());
     }
 
-    Ok(Html(Success::default().render().unwrap()))
+    html::render(Success::default())
 }

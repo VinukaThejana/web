@@ -4,13 +4,13 @@ use crate::{
     config::{ENV, state::AppState},
     error::{AppError, HtmlError},
     model::newsletter::SignUp,
-    util::cloudflare_verify,
+    util::{cloudflare_verify, html},
 };
 use askama::Template;
 use axum::{
     Form,
     extract::{ConnectInfo, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use resend_rs::types::ContactData;
 use validator::Validate;
@@ -38,12 +38,12 @@ pub async fn subscribe(
 ) -> Result<impl IntoResponse, HtmlError> {
     let ip = addr.ip().to_string();
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(CaptchaFailed::default().render().unwrap()));
+        return html::render(CaptchaFailed::default());
     }
 
     if let Err(e) = payload.validate() {
         log::info!("validation error: {:?}", AppError::Validation(e));
-        return Ok(Html(Invalid::default().render().unwrap()));
+        return html::render(Invalid::default());
     }
 
     let contact = ContactData::new(&payload.email).with_unsubscribed(false);
@@ -54,8 +54,8 @@ pub async fn subscribe(
         .await
     {
         log::error!("error creating contact: {:?}", e);
-        return Ok(Html(Failed::default().render().unwrap()));
+        return html::render(Failed::default());
     }
 
-    Ok(Html(Okay::default().render().unwrap()))
+    html::render(Okay::default())
 }

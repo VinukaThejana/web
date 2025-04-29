@@ -3,12 +3,12 @@ use crate::{
     config::{ENV, state::AppState},
     database,
     error::{AppError, HtmlError},
-    util::{Cache, NON_EXISTENT_KEY, parser::cmark},
+    util::{Cache, NON_EXISTENT_KEY, html, parser::cmark},
 };
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use chrono::{DateTime, Utc};
 use redis::RedisResult;
@@ -99,7 +99,8 @@ pub async fn render(
             date: &post_cache.date,
             word_count: words_count::count(&post_cache.content).words,
         };
-        return Ok(Html(post.render().unwrap()));
+
+        return html::render(post);
     }
 
     Cache::MISS.log(&ck);
@@ -159,5 +160,6 @@ pub async fn render(
         date: &post.date,
         word_count: words_count::count(&post.content).words,
     };
-    Ok(Html(post.render().unwrap()))
+
+    html::render(post)
 }

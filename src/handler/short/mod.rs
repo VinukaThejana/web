@@ -3,13 +3,13 @@ use crate::{
     database,
     error::{AppError, HtmlError},
     model::short::{AddShort, DelShort, ShortKey},
-    util::cloudflare_verify,
+    util::{cloudflare_verify, html},
 };
 use askama::Template;
 use axum::{
     Form,
     extract::{ConnectInfo, State},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
 };
 use std::net::SocketAddr;
 use validator::Validate;
@@ -44,30 +44,24 @@ pub async fn verify(
     Form(payload): Form<ShortKey>,
 ) -> Result<impl IntoResponse, HtmlError> {
     if let Err(e) = payload.validate() {
-        return Ok(Html(
-            ValidateKey::invalid(&payload.key, &AppError::Validation(e).to_string())
-                .render()
-                .unwrap(),
+        return html::render(ValidateKey::invalid(
+            &payload.key,
+            &AppError::Validation(e).to_string(),
         ));
     }
 
     let Ok(is_valid) = database::short::is_key_valid(&state.db, &payload.key).await else {
-        return Ok(Html(
-            ValidateKey::invalid(&payload.key, "Failed to check key validity")
-                .render()
-                .unwrap(),
+        return html::render(ValidateKey::invalid(
+            &payload.key,
+            "Failed to check key validity",
         ));
     };
 
     if !is_valid {
-        return Ok(Html(
-            ValidateKey::invalid(&payload.key, "Key is already in use")
-                .render()
-                .unwrap(),
-        ));
+        return html::render(ValidateKey::invalid(&payload.key, "key is already in use"));
     }
 
-    Ok(Html(ValidateKey::okay(&payload.key).render().unwrap()))
+    html::render(ValidateKey::okay(&payload.key))
 }
 
 #[derive(Debug, Default, Template)]
@@ -103,23 +97,15 @@ pub async fn add(
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(Captcha::default().render().unwrap()));
+        return html::render(Captcha::default());
     }
 
     if let Err(e) = payload.validate() {
-        return Ok(Html(
-            Invalid::new(form_id, &AppError::Validation(e).to_string())
-                .render()
-                .unwrap(),
-        ));
+        return html::render(Invalid::new(form_id, &AppError::Validation(e).to_string()));
     }
 
     if payload.password != (*ENV.admin_password) {
-        return Ok(Html(
-            Invalid::new(form_id, "password is incorrect")
-                .render()
-                .unwrap(),
-        ));
+        return html::render(Invalid::new(form_id, "password is incorrect"));
     }
 
     if let Err(e) = database::short::add(
@@ -134,17 +120,13 @@ pub async fn add(
         log::error!("failed to add key to the database: {}", e);
         match e {
             AppError::UniqueViolation(_) => {
-                return Ok(Html(
-                    Invalid::new(form_id, "key is already in use")
-                        .render()
-                        .unwrap(),
-                ));
+                return html::render(Invalid::new(form_id, "key is already in use"));
             }
-            _ => return Ok(Html(Failed::default().render().unwrap())),
+            _ => return html::render(Failed::default()),
         }
     }
 
-    Ok(Html(AddOkay::default().render().unwrap()))
+    html::render(AddOkay::default())
 }
 
 #[derive(Debug, Default, Template)]
@@ -160,23 +142,15 @@ pub async fn delete(
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Ok(Html(Captcha::default().render().unwrap()));
+        return html::render(Captcha::default());
     }
 
     if let Err(e) = payload.validate() {
-        return Ok(Html(
-            Invalid::new(form_id, &AppError::Validation(e).to_string())
-                .render()
-                .unwrap(),
-        ));
+        return html::render(Invalid::new(form_id, &AppError::Validation(e).to_string()));
     }
 
     if payload.password != (*ENV.admin_password) {
-        return Ok(Html(
-            Invalid::new(form_id, "password is incorrect")
-                .render()
-                .unwrap(),
-        ));
+        return html::render(Invalid::new(form_id, "password is incorrect"));
     }
 
     if let Err(e) = database::short::delete(&state.db, &payload.key)
@@ -186,15 +160,13 @@ pub async fn delete(
         log::error!("failed to delete key from the database: {}", e);
         match e {
             AppError::NotFound(_) => {
-                return Ok(Html(
-                    Invalid::new(form_id, "key is not found").render().unwrap(),
-                ));
+                return html::render(Invalid::new(form_id, "key is not found"));
             }
             _ => {
-                return Ok(Html(Failed::default().render().unwrap()));
+                return html::render(Failed::default());
             }
         }
     }
 
-    Ok(Html(DelOkay::default().render().unwrap()))
+    html::render(DelOkay::default())
 }
