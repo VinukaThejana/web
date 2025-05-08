@@ -2,6 +2,7 @@ use ::log::info;
 use axum::{
     Router,
     http::{HeaderValue, Method, header},
+    response::Redirect,
     routing::{get, post},
 };
 use portfolio::util::governer_conf;
@@ -49,6 +50,7 @@ async fn main() -> anyhow::Result<()> {
         .nest(
             "/upload",
             Router::new()
+                .route("/", get(get(pages::upload::index::render)))
                 .route("/storage", get(pages::upload::storage::render))
                 .route("/cdn", get(pages::upload::cdn::render))
                 .route("/list", get(pages::upload::list::render)),
@@ -56,6 +58,7 @@ async fn main() -> anyhow::Result<()> {
         .nest(
             "/short",
             Router::new()
+                .route("/", get(pages::short::index::render))
                 .route("/add", get(pages::short::add::render))
                 .route("/del", get(pages::short::del::render))
                 .route("/list", get(pages::short::list::render)),
