@@ -3,10 +3,11 @@ use axum::response::{Html, IntoResponse};
 
 #[derive(Debug, Template)]
 #[template(path = "upload/storage.html")]
-pub struct Tmpl<'a> {
-    pub active: &'a str,
+pub struct Tmpl {
+    pub active: &'static str,
 }
-impl Default for Tmpl<'_> {
+
+impl Default for Tmpl {
     fn default() -> Self {
         Self { active: "storage" }
     }

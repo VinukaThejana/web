@@ -2,7 +2,6 @@ use ::log::info;
 use axum::{
     Router,
     http::{HeaderValue, Method, header},
-    response::Redirect,
     routing::{get, post},
 };
 use portfolio::util::governer_conf;

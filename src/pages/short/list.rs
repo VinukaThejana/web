@@ -11,11 +11,15 @@ use axum::{extract::State, response::IntoResponse};
 #[derive(Default, Template)]
 #[template(path = "short/list.html")]
 pub struct Tmpl {
+    pub active: &'static str,
     pub links: Vec<Link>,
 }
 impl Tmpl {
     pub fn new(links: Vec<Link>) -> Self {
-        Self { links }
+        Self {
+            active: "list",
+            links,
+        }
     }
 }
 

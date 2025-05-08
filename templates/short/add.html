@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "tabs.html" %}
 
 {% block head %}
 <title>Shorten Link | Backend Development & System Design</title>
@@ -22,7 +22,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block tab_content %}
 <main class="py-12">
   <section class="container mx-auto px-4 max-w-3xl">
     <!-- Header -->
@@ -103,8 +103,6 @@
     </div>
   </section>
 </main>
-
-{% call super() %}
 {% endblock %}
 
 {% block scripts %}
