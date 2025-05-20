@@ -1,12 +1,16 @@
 use crate::{
     config::{ENV, state::AppState},
-    error::{AppError, JsonError},
-    model::{cdn, r2},
-    util::{IMG_EXTENSIONS, cloudflare_verify},
+    error::{AppError, HtmlError, JsonError},
+    model::{
+        cdn,
+        r2::{self, DelResource},
+    },
+    util::{IMG_EXTENSIONS, cloudflare_verify, html},
 };
+use askama::Template;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::{
-    Json,
+    Form, Json,
     extract::{ConnectInfo, State},
     response::IntoResponse,
 };
@@ -18,6 +22,26 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use validator::Validate;
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/upload/captcha.html")]
+pub struct Captcha {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/upload/failed.html")]
+pub struct Failed {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/upload/invalid.html")]
+pub struct Invalid<'a> {
+    pub form_id: &'a str,
+    pub message: &'a str,
+}
+impl<'a> Invalid<'a> {
+    pub fn new(form_id: &'a str, message: &'a str) -> Self {
+        Self { form_id, message }
+    }
+}
 
 pub async fn presigned(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
@@ -137,4 +161,40 @@ pub async fn cdn(Json(payload): Json<cdn::Payload>) -> Result<impl IntoResponse,
     Ok(Json(json!({
         "url": url,
     })))
+}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/upload/del-success.html")]
+pub struct DelOkay {}
+
+pub async fn delete(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    Form(payload): Form<DelResource>,
+) -> Result<impl IntoResponse, HtmlError> {
+    let form_id = "delete-form";
+    let ip = addr.ip().to_string();
+
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return html::render(Captcha::default());
+    }
+
+    if let Err(e) = payload.validate() {
+        return html::render(Invalid::new(form_id, &AppError::Validation(e).to_string()));
+    }
+
+    if payload.password != (*ENV.admin_password) {
+        return html::render(Invalid::new(form_id, "password is incorrect"));
+    }
+
+    state
+        .s3
+        .delete_object()
+        .bucket(&*ENV.cloudflare_bucket_name)
+        .key(&payload.key)
+        .send()
+        .await
+        .map_err(AppError::from_generic_error)?;
+
+    html::render(DelOkay::default())
 }

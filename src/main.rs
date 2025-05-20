@@ -52,7 +52,8 @@ async fn main() -> anyhow::Result<()> {
                 .route("/", get(get(pages::upload::index::render)))
                 .route("/storage", get(pages::upload::storage::render))
                 .route("/cdn", get(pages::upload::cdn::render))
-                .route("/list", get(pages::upload::list::render)),
+                .route("/list", get(pages::upload::list::render))
+                .route("/delete", get(pages::upload::delete::render)),
         )
         .nest(
             "/short",
@@ -92,6 +93,10 @@ async fn main() -> anyhow::Result<()> {
                                 .route("/verify", post(handler::short::verify))
                                 .route("/add", post(handler::short::add))
                                 .route("/del", post(handler::short::delete)),
+                        )
+                        .nest(
+                            "/upload",
+                            Router::new().route("/del", post(handler::upload::delete)),
                         )
                         .route("/contact/send", post(handler::contact::send_msg)),
                 ),

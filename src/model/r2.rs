@@ -13,3 +13,15 @@ pub struct Payload {
     #[serde(rename = "cf-turnstile-response")]
     pub cf_turnstile_response: String,
 }
+
+#[derive(Default, Debug, Serialize, Deserialize, Validate)]
+pub struct DelResource {
+    #[validate(length(min = 1, message = "path cannot be empty"))]
+    pub key: String,
+
+    pub password: String,
+
+    #[validate(length(min = 1, message = "not valid"))]
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: String,
+}
