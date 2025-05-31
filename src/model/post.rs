@@ -110,6 +110,18 @@ pub struct AddPost {
     pub date: u64,
 }
 
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct DelPost {
+    #[validate(custom(function = "verify::slug"))]
+    pub slug: String,
+
+    pub password: String,
+
+    #[validate(length(min = 1, message = "not valid"))]
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: String,
+}
+
 #[derive(FromQueryResult, Debug, Serialize, Deserialize)]
 pub struct PartialPostWithSlug {
     pub id: i32,

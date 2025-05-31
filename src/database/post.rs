@@ -116,3 +116,12 @@ pub async fn add(db: &DatabaseConnection, payload: &AddPost) -> Result<(), DbErr
 
     Ok(())
 }
+
+pub async fn del_by_slug(db: &DatabaseConnection, slug: &str) -> Result<(), DbErr> {
+    entity::post::Entity::delete_many()
+        .filter(entity::post::Column::Slug.eq(slug.to_lowercase()))
+        .exec(db)
+        .await?;
+
+    Ok(())
+}

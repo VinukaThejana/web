@@ -8,8 +8,11 @@ use crate::{
     config::{ENV, state::AppState},
     database,
     error::{AppError, HtmlError},
-    model::post::AddPost,
-    util::{POST_LIMIT, cloudflare_verify, html},
+    model::post::{AddPost, DelPost},
+    util::{
+        POST_LIMIT, cloudflare_verify,
+        html::{self},
+    },
 };
 use askama::Template;
 use axum::{
@@ -137,4 +140,76 @@ pub async fn add(
     });
 
     html::render(PostAddSuccess::default())
+}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/del-post/captcha.html")]
+pub struct DelCaptchaFailed {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/del-post/invalid.html")]
+pub struct DelInvalid<'a> {
+    pub form_id: &'a str,
+    pub message: &'a str,
+}
+impl<'a> DelInvalid<'a> {
+    pub fn new(message: &'a str) -> Self {
+        Self {
+            form_id: "del-post-form",
+            message,
+        }
+    }
+}
+#[derive(Debug, Default, Template)]
+#[template(path = "components/del-post/success.html")]
+pub struct DelOkay {}
+#[derive(Debug, Default, Template)]
+#[template(path = "components/del-post/failed.html")]
+pub struct DelFailed {}
+
+pub async fn delete(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    Form(payload): Form<DelPost>,
+) -> Result<impl IntoResponse, HtmlError> {
+    let ip = addr.ip().to_string();
+
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return html::render(DelCaptchaFailed::default());
+    }
+
+    if let Err(e) = payload.validate() {
+        return html::render(DelInvalid::new(&AppError::Validation(e).to_string()));
+    }
+
+    if payload.password != (*ENV.admin_password) {
+        return html::render(DelInvalid::new("password is incorrect"));
+    }
+
+    let conn = state.get_redis_conn().await.map_err(AppError::Other);
+    if let Err(e) = conn {
+        log::error!("failed to get redis connection: {}", e);
+        return html::render(DelFailed::default());
+    }
+    let mut conn = conn.unwrap();
+
+    if let Err(e) = database::post::del_by_slug(&state.db, &payload.slug)
+        .await
+        .map_err(AppError::from_database_error)
+    {
+        log::error!("failed to delete post: {}", e);
+        return html::render(DelFailed::default());
+    }
+
+    let result: RedisResult<()> = redis::pipe()
+        .flushdb()
+        .ignore()
+        .query_async(&mut conn)
+        .await;
+    if let Err(err) = result {
+        log::error!("failed to flush the redis database: {}", err);
+        return html::render(DelFailed::default());
+    }
+
+    html::render(DelOkay::default())
 }
