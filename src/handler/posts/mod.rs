@@ -149,20 +149,18 @@ pub struct DelCaptchaFailed {}
 #[derive(Debug, Default, Template)]
 #[template(path = "components/del-post/invalid.html")]
 pub struct DelInvalid<'a> {
-    pub form_id: &'a str,
     pub message: &'a str,
 }
 impl<'a> DelInvalid<'a> {
     pub fn new(message: &'a str) -> Self {
-        Self {
-            form_id: "del-post-form",
-            message,
-        }
+        Self { message }
     }
 }
+
 #[derive(Debug, Default, Template)]
 #[template(path = "components/del-post/success.html")]
 pub struct DelOkay {}
+
 #[derive(Debug, Default, Template)]
 #[template(path = "components/del-post/failed.html")]
 pub struct DelFailed {}
