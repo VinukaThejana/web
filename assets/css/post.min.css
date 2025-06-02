@@ -126,8 +126,6 @@
   font-size: 1.5rem;
   margin-bottom: .75rem;
   color: #d1d5db;
-  letter-spacing: .05em;
-  text-transform: uppercase
 }
 
 .prose h3::before {
