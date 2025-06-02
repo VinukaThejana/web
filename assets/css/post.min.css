@@ -4,7 +4,11 @@
 }
 
 .prose a,
-.prose h2 {
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   transition: color .2s ease-in-out
 }
 
@@ -12,6 +16,9 @@
 .prose h1,
 .prose h2,
 .prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
 .prose pre {
   position: relative
 }
@@ -92,6 +99,9 @@
 
 .prose h2,
 .prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
 .prose th {
   font-weight: 600
 }
@@ -115,22 +125,60 @@
   font-size: 1.875rem;
   margin-bottom: .875rem;
   color: #e5e7eb;
-  padding-left: .5rem
+  padding-left: .5rem;
+  background: linear-gradient(to right, #e5e7eb 20%, rgba(52, 211, 153, 0.3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent
 }
 
 .prose h2:hover {
-  color: #f9fafb
+  color: transparent
 }
 
 .prose h3 {
   font-size: 1.5rem;
   margin-bottom: .75rem;
   color: #d1d5db;
+  background: linear-gradient(to right, #d1d5db 20%, rgba(52, 211, 153, 0.25));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent
 }
 
 .prose h3::before {
   content: '— ';
   color: #10b981
+}
+
+.prose h4 {
+  font-size: 1.25rem;
+  margin-bottom: .75rem;
+  color: #d1d5db;
+  background: linear-gradient(to right, #d1d5db 20%, rgba(52, 211, 153, 0.2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent
+}
+
+.prose h5 {
+  font-size: 1.125rem;
+  margin-bottom: .75rem;
+  color: #d1d5db;
+  background: linear-gradient(to right, #d1d5db 20%, rgba(52, 211, 153, 0.15));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent
+}
+
+.prose h6 {
+  font-size: 1rem;
+  margin-bottom: .75rem;
+  color: #d1d5db;
+  background: linear-gradient(to right, #d1d5db 20%, rgba(52, 211, 153, 0.1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent
 }
 
 .prose p {
