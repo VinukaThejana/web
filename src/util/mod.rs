@@ -35,6 +35,7 @@ pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
     "ig" => "https://www.instagram.com/vinukathejana/",
     "facebook" => "https://www.facebook.com/vinukakodituwakku",
     "fb" => "https://www.facebook.com/vinukakodituwakku",
+    "threads" => "https://www.threads.com/@vinukathejana",
 };
 
 pub const AUTHOR: &str = "Vinuka Kodituwakku";
