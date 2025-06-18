@@ -1,14 +1,14 @@
 /*
 
-  STYLESHEET STRUCTURE
-  ================================================================
-  This stylesheet is organized from the most generic to the most specific rules.
+  STYLESHEET STRUCTURE
+  ================================================================
+  This stylesheet is organized from the most generic to the most specific rules.
 
-  1. SETTINGS....: Global variables (CSS Custom Properties) for colors, fonts, spacing.
-  2. BASE........: Default styles for basic HTML elements (scoped under .prose).
-  3. LAYOUT......: Styles for major page layout containers (.container, .content-wrapper).
-  4. COMPONENTS..: Styling for individual, reusable components (.article-date, .copy-button, etc.).
-  5. RESPONSIVE..: Media queries that override previous rules for different screen sizes.
+  1. SETTINGS....: Global variables (CSS Custom Properties) for colors, fonts, spacing.
+  2. BASE........: Default styles for basic HTML elements (scoped under .prose).
+  3. LAYOUT......: Styles for major page layout containers (.container, .content-wrapper).
+  4. COMPONENTS..: Styling for individual, reusable components (.article-date, .copy-button, etc.).
+  5. RESPONSIVE..: Media queries that override previous rules for different screen sizes.
 
 */
 
@@ -372,7 +372,6 @@
   display: none;
 }
 
-
 /* --- Tables --- */
 .prose table {
   width: 100%;
@@ -403,6 +402,12 @@
   background-color: var(--color-brand-primary);
   color: var(--color-bg-primary);
   transition: background-color var(--transition-fast) ease-in-out, color var(--transition-fast) ease-in-out;
+}
+
+/* --- Table of Contents --- */
+/* Default mobile-first state: Hide the TOC. It will be shown via media query on larger screens. */
+.toc-container {
+  display: none;
 }
 
 
@@ -439,6 +444,7 @@
 
   .toc-container {
     display: block;
+    /* This now overrides the default 'display: none' */
     width: 250px;
     position: sticky;
     top: 5rem;
