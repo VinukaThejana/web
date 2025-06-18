@@ -34,6 +34,7 @@ impl Default for Tmpl {
             Social::new("GitHub", SOCIALS.get("git").unwrap(), "fa-github"),
             Social::new("LinkedIn", SOCIALS.get("in").unwrap(), "fa-linkedin"),
             Social::new("X", SOCIALS.get("x").unwrap(), "fa-x-twitter"),
+            Social::new("Threads", SOCIALS.get("threads").unwrap(), "fa-threads"),
             Social::new("Facebook", SOCIALS.get("fb").unwrap(), "fa-facebook"),
             Social::new("Instagram", SOCIALS.get("ig").unwrap(), "fa-instagram"),
         ];
@@ -84,7 +85,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         .await
         .unwrap_or(vec![])
         .to_posts();
-    println!("posts: askdfkasdkf {:?}", posts);
+    println!("posts: {:?}", posts);
 
     let payload = to_cache(&posts);
     tokio::spawn(async move {
