@@ -15,7 +15,7 @@ use redis::RedisResult;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Template, Default)]
-#[template(path = "post.html")]
+#[template(path = "posts/view.html")]
 pub struct Tmpl<'a> {
     pub title: &'a str,
     pub image_url: &'a str,

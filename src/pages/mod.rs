@@ -1,7 +1,5 @@
 pub mod about;
-pub mod addpost;
 pub mod blog;
-pub mod delpost;
 pub mod index;
 pub mod key;
 pub mod notfound;

@@ -44,9 +44,13 @@ async fn main() -> anyhow::Result<()> {
         .route("/about", get(pages::about::render))
         .route("/blog/{page}", get(pages::blog::paginated))
         .route("/{key}", get(pages::key::render))
-        .route("/posts/{slug}", get(pages::post::render))
-        .route("/add-post", get(pages::addpost::render))
-        .route("/del-post", get(pages::delpost::render))
+        .nest(
+            "/posts",
+            Router::new()
+                .route("/{slug}", get(pages::post::view::render))
+                .route("/add", get(pages::post::add::render))
+                .route("/del", get(pages::post::delete::render)),
+        )
         .nest(
             "/upload",
             Router::new()
