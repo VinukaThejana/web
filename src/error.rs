@@ -1,4 +1,4 @@
-use crate::pages::{notfound, servererror};
+use crate::pages::status::{notfound, servererror};
 use askama::Template;
 use axum::{
     Json,

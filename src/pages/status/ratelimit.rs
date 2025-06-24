@@ -3,7 +3,7 @@ use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse};
 
 #[derive(Debug, Template, Default)]
-#[template(path = "429.html")]
+#[template(path = "status/429.html")]
 pub struct Tmpl {
     wait_time: u64,
 }

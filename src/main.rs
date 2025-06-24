@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
                 .route("/del", get(pages::short::del::render))
                 .route("/list", get(pages::short::list::render)),
         )
-        .fallback(pages::notfound::render)
+        .fallback(pages::status::notfound::render)
         .nest(
             "/api",
             Router::new()

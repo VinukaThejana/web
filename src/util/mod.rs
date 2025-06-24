@@ -3,7 +3,7 @@ pub mod parser;
 pub mod verify;
 
 use crate::config::{ENV, state::AppState};
-use crate::pages::{ratelimit, servererror};
+use crate::pages::status::{ratelimit, servererror};
 use askama::Template;
 use axum::Json;
 use axum::http::StatusCode;
