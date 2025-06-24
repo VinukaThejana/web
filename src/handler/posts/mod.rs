@@ -26,15 +26,15 @@ use std::net::SocketAddr;
 use validator::Validate;
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/add-post/success.html")]
+#[template(path = "components/posts/add/success.html")]
 pub struct PostAddSuccess {}
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/add-post/failed.html")]
+#[template(path = "components/posts/add/failed.html")]
 pub struct PostAddFailed {}
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/add-post/invalid.html")]
+#[template(path = "components/posts/add/invalid.html")]
 pub struct PostAddInvaid<'a> {
     message: &'a str,
 }
@@ -45,7 +45,7 @@ impl<'a> PostAddInvaid<'a> {
 }
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/add-post/captcha.html")]
+#[template(path = "components/posts/add/captcha.html")]
 pub struct PostCaptchaFailed {}
 
 pub async fn add(
@@ -143,11 +143,11 @@ pub async fn add(
 }
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/del-post/captcha.html")]
+#[template(path = "components/posts/delete/captcha.html")]
 pub struct DelCaptchaFailed {}
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/del-post/invalid.html")]
+#[template(path = "components/posts/delete/invalid.html")]
 pub struct DelInvalid<'a> {
     pub message: &'a str,
 }
@@ -158,11 +158,11 @@ impl<'a> DelInvalid<'a> {
 }
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/del-post/success.html")]
+#[template(path = "components/posts/delete/success.html")]
 pub struct DelOkay {}
 
 #[derive(Debug, Default, Template)]
-#[template(path = "components/del-post/failed.html")]
+#[template(path = "components/posts/delete/failed.html")]
 pub struct DelFailed {}
 
 pub async fn delete(
