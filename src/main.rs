@@ -2,15 +2,16 @@ use ::log::info;
 use axum::{
     Router,
     http::{HeaderValue, Method, header},
-    routing::{get, post},
+    routing::get,
 };
-use portfolio::util::governer_conf;
 use portfolio::{
     config::{ENV, log, state::AppState},
     handler,
     pages::{self},
+    routes::{api, components},
     util,
 };
+use portfolio::{routes, util::governer_conf};
 use std::{net::SocketAddr, time::Duration};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
@@ -40,74 +41,13 @@ async fn main() -> anyhow::Result<()> {
     });
 
     let app = Router::new()
-        .route("/", get(pages::index::render))
-        .route("/about", get(pages::about::render))
-        .route("/blog/{page}", get(pages::blog::paginated))
-        .route("/{key}", get(pages::key::render))
-        .nest(
-            "/posts",
-            Router::new()
-                .route("/{slug}", get(pages::post::view::render))
-                .route("/{slug}/edit", get(pages::post::edit::render))
-                .route("/add", get(pages::post::add::render))
-                .route("/del", get(pages::post::delete::render)),
-        )
-        .nest(
-            "/upload",
-            Router::new()
-                .route("/", get(get(pages::upload::index::render)))
-                .route("/storage", get(pages::upload::storage::render))
-                .route("/cdn", get(pages::upload::cdn::render))
-                .route("/list", get(pages::upload::list::render))
-                .route("/delete", get(pages::upload::delete::render)),
-        )
-        .nest(
-            "/short",
-            Router::new()
-                .route("/", get(pages::short::index::render))
-                .route("/add", get(pages::short::add::render))
-                .route("/del", get(pages::short::del::render))
-                .route("/list", get(pages::short::list::render)),
-        )
+        .merge(routes::pages::routes())
         .fallback(pages::status::notfound::render)
         .nest(
             "/api",
             Router::new()
-                .route("/health", get(handler::health))
-                .nest(
-                    "/upload",
-                    Router::new()
-                        .route("/storage", post(handler::upload::presigned))
-                        .route("/cdn", post(handler::upload::cdn)),
-                )
-                .nest(
-                    "/components",
-                    Router::new()
-                        .nest(
-                            "/newsletter",
-                            Router::new().route("/subscribe", post(handler::newsletter::subscribe)),
-                        )
-                        .nest(
-                            "/posts",
-                            Router::new()
-                                .route("/home/load-more", post(handler::posts::home::load_more))
-                                .route("/add", post(handler::posts::add))
-                                .route("/edit", post(handler::posts::edit))
-                                .route("/del", post(handler::posts::delete)),
-                        )
-                        .nest(
-                            "/short",
-                            Router::new()
-                                .route("/verify", post(handler::short::verify))
-                                .route("/add", post(handler::short::add))
-                                .route("/del", post(handler::short::delete)),
-                        )
-                        .nest(
-                            "/upload",
-                            Router::new().route("/del", post(handler::upload::delete)),
-                        )
-                        .route("/contact/send", post(handler::contact::send_msg)),
-                ),
+                .merge(api::routes())
+                .nest("/components", Router::new().merge(components::routes())),
         )
         .route("/sitemap.xml", get(handler::site_xml))
         .route("/favicon.ico", get(handler::favicon))
@@ -116,13 +56,18 @@ async fn main() -> anyhow::Result<()> {
             "/apple-touch-icon-precomposed.png",
             get(handler::apple_icon_precompressed),
         )
-        .nest_service("/assets", tower_http::services::ServeDir::new("assets"))
-        .layer(SetResponseHeaderLayer::if_not_present(
-            header::CACHE_CONTROL,
-            HeaderValue::from_static("public, max-age=86400"),
-        ))
+        .nest_service(
+            "/assets",
+            tower_http::services::ServeDir::new("assets")
+                .precompressed_gzip()
+                .precompressed_br(),
+        )
         .layer(
             ServiceBuilder::new()
+                .layer(SetResponseHeaderLayer::if_not_present(
+                    header::CACHE_CONTROL,
+                    HeaderValue::from_static("public, max-age=86400"),
+                ))
                 .layer(TraceLayer::new_for_http())
                 .layer(TimeoutLayer::new(Duration::from_secs(10)))
                 .layer(

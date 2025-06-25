@@ -24,7 +24,7 @@ pub struct Payload {
     pub page: u64,
 }
 
-pub async fn load_more(
+pub async fn run(
     State(state): State<AppState>,
     Form(payload): Form<Payload>,
 ) -> Result<impl IntoResponse, HtmlError> {

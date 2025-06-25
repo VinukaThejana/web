@@ -1,0 +1,91 @@
+use crate::{
+    config::{ENV, state::AppState},
+    database,
+    error::{AppError, HtmlError},
+    model::post::EditPost,
+    util::{
+        cloudflare_verify,
+        html::{self},
+    },
+};
+use axum::{
+    Form,
+    extract::{ConnectInfo, State},
+    response::IntoResponse,
+};
+use redis::RedisResult;
+use std::net::SocketAddr;
+use validator::Validate;
+
+use super::{CaptchaFailed, Failed, Invalid, Okay};
+
+const FORM_ID: &str = "edit-post-form";
+
+pub async fn run(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    Form(payload): Form<EditPost>,
+) -> Result<impl IntoResponse, HtmlError> {
+    let ip = addr.ip().to_string();
+
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return html::render(CaptchaFailed::new(FORM_ID));
+    }
+
+    if let Err(e) = payload.validate() {
+        return html::render(Invalid::new(FORM_ID, &AppError::Validation(e).to_string()));
+    }
+
+    if payload.password != (*ENV.admin_password) {
+        return html::render(Invalid::new(FORM_ID, "password is incorrect"));
+    }
+
+    let conn = state.get_redis_conn().await.map_err(AppError::Other);
+    if let Err(e) = conn {
+        log::error!("failed to get redis connection: {}", e);
+        return html::render(Failed::default());
+    }
+    let mut conn = conn.unwrap();
+
+    if let Err(e) = database::post::update(
+        &state.db,
+        &entity::post::Model {
+            id: payload.id,
+            title: payload.title,
+            slug: payload.slug,
+            photo_url: payload.photo_url,
+            content: payload.content,
+            tags: payload.tags,
+            summary: payload.summary,
+            date: payload.date.try_into().unwrap(),
+        },
+    )
+    .await
+    .map_err(AppError::from_database_error)
+    {
+        match e {
+            AppError::UniqueViolation(_) => {
+                return html::render(Invalid::new(FORM_ID, "post with this slug already exists"));
+            }
+            _ => {
+                log::error!("failed to update post: {}", e);
+                return html::render(Failed::default());
+            }
+        }
+    };
+
+    let result: RedisResult<()> = redis::pipe()
+        .flushdb()
+        .ignore()
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("failed to flush redis: {}", e);
+        return html::render(Failed::default());
+    }
+
+    html::render(Okay::new(
+        "Edited",
+        "Your post has been successfully edited. It will be visible to others shortly.",
+    ))
+}

@@ -5,4 +5,5 @@ pub mod error;
 pub mod handler;
 pub mod model;
 pub mod pages;
+pub mod routes;
 pub mod util;
