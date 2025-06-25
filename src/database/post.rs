@@ -94,6 +94,30 @@ pub async fn get_by_slug(
     Ok(post)
 }
 
+pub async fn get_by_id(db: &DatabaseConnection, id: i32) -> Result<entity::post::Model, DbErr> {
+    let post = entity::post::Entity::find_by_id(id).one(db).await?;
+    let post = post.ok_or(DbErr::RecordNotFound(String::from("post not found")))?;
+    Ok(post)
+}
+
+pub async fn update(db: &DatabaseConnection, post: &entity::post::Model) -> Result<(), DbErr> {
+    entity::post::Entity::update_many()
+        .set(entity::post::ActiveModel {
+            title: Set(post.title.to_owned()),
+            slug: Set(post.slug.to_owned()),
+            summary: Set(post.summary.to_owned()),
+            photo_url: Set(post.photo_url.to_owned()),
+            tags: Set(post.tags.to_owned()),
+            content: Set(post.content.to_owned()),
+            ..Default::default()
+        })
+        .filter(entity::post::Column::Id.eq(post.id))
+        .exec(db)
+        .await?;
+
+    Ok(())
+}
+
 pub async fn get_total_posts(db: &DatabaseConnection) -> Result<u64, DbErr> {
     entity::post::Entity::find().count(db).await
 }

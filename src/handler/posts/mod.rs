@@ -8,7 +8,7 @@ use crate::{
     config::{ENV, state::AppState},
     database,
     error::{AppError, HtmlError},
-    model::post::{AddPost, DelPost},
+    model::post::{AddPost, DelPost, EditPost},
     util::{
         POST_LIMIT, cloudflare_verify,
         html::{self},
@@ -46,7 +46,7 @@ impl<'a> PostAddInvaid<'a> {
 
 #[derive(Debug, Default, Template)]
 #[template(path = "components/posts/add/captcha.html")]
-pub struct PostCaptchaFailed {}
+pub struct PostAddCaptchaFailed {}
 
 pub async fn add(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
@@ -56,7 +56,7 @@ pub async fn add(
     let ip = addr.ip().to_string();
 
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return html::render(PostCaptchaFailed::default());
+        return html::render(PostAddCaptchaFailed::default());
     }
 
     if let Err(e) = payload.validate() {
@@ -140,6 +140,95 @@ pub async fn add(
     });
 
     html::render(PostAddSuccess::default())
+}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/posts/edit/success.html")]
+pub struct PostEditSuccess {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/posts/edit/failed.html")]
+pub struct PostEditFailed {}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/posts/edit/invalid.html")]
+pub struct PostEditInvaid<'a> {
+    message: &'a str,
+}
+impl<'a> PostEditInvaid<'a> {
+    pub fn new(message: &'a str) -> Self {
+        Self { message }
+    }
+}
+
+#[derive(Debug, Default, Template)]
+#[template(path = "components/posts/edit/captcha.html")]
+pub struct PostEditCaptchaFailed {}
+
+pub async fn edit(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    Form(payload): Form<EditPost>,
+) -> Result<impl IntoResponse, HtmlError> {
+    let ip = addr.ip().to_string();
+
+    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+        return html::render(PostEditCaptchaFailed::default());
+    }
+
+    if let Err(e) = payload.validate() {
+        return html::render(PostEditInvaid::new(&AppError::Validation(e).to_string()));
+    }
+
+    if payload.password != (*ENV.admin_password) {
+        return html::render(PostEditInvaid::new("password is incorrect"));
+    }
+
+    let conn = state.get_redis_conn().await.map_err(AppError::Other);
+    if let Err(e) = conn {
+        log::error!("failed to get redis connection: {}", e);
+        return html::render(PostEditFailed::default());
+    }
+    let mut conn = conn.unwrap();
+
+    if let Err(e) = database::post::update(
+        &state.db,
+        &entity::post::Model {
+            id: payload.id,
+            title: payload.title,
+            slug: payload.slug,
+            photo_url: payload.photo_url,
+            content: payload.content,
+            tags: payload.tags,
+            summary: payload.summary,
+            date: payload.date.try_into().unwrap(),
+        },
+    )
+    .await
+    .map_err(AppError::from_database_error)
+    {
+        match e {
+            AppError::UniqueViolation(_) => {
+                return html::render(PostEditInvaid::new("post with this slug already exists"));
+            }
+            _ => {
+                log::error!("failed to update post: {}", e);
+                return html::render(PostEditFailed::default());
+            }
+        }
+    };
+
+    let result: RedisResult<()> = redis::pipe()
+        .flushdb()
+        .ignore()
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("failed to flush redis: {}", e);
+        return html::render(PostEditFailed::default());
+    }
+
+    html::render(PostEditSuccess::default())
 }
 
 #[derive(Debug, Default, Template)]

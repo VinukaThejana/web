@@ -48,6 +48,7 @@ async fn main() -> anyhow::Result<()> {
             "/posts",
             Router::new()
                 .route("/{slug}", get(pages::post::view::render))
+                .route("/{slug}/edit", get(pages::post::edit::render))
                 .route("/add", get(pages::post::add::render))
                 .route("/del", get(pages::post::delete::render)),
         )
@@ -91,6 +92,7 @@ async fn main() -> anyhow::Result<()> {
                             Router::new()
                                 .route("/home/load-more", post(handler::posts::home::load_more))
                                 .route("/add", post(handler::posts::add))
+                                .route("/edit", post(handler::posts::edit))
                                 .route("/del", post(handler::posts::delete)),
                         )
                         .nest(

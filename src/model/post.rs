@@ -111,6 +111,47 @@ pub struct AddPost {
 }
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct EditPost {
+    pub id: i32,
+    pub date: u64,
+
+    #[validate(length(
+        min = 5,
+        max = 50,
+        message = "title must be between 5 and 50 characters"
+    ))]
+    pub title: String,
+
+    #[validate(custom(function = "verify::slug"))]
+    pub slug: String,
+
+    #[validate(length(
+        min = 50,
+        max = 160,
+        message = "summary must be between 50 and 160 characters"
+    ))]
+    pub summary: String,
+
+    #[validate(length(max = 255, message = "photo_url must be less than 255 characters"))]
+    pub photo_url: String,
+
+    #[validate(length(max = 50, message = "tags must be less than 50 characters"))]
+    pub tags: String,
+
+    #[validate(length(
+        max = 100_000,
+        message = "content must be less than 100_000 characters"
+    ))]
+    pub content: String,
+
+    pub password: String,
+
+    #[validate(length(min = 1, message = "not valid"))]
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct DelPost {
     #[validate(custom(function = "verify::slug"))]
     pub slug: String,

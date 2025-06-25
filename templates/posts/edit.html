@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<title>Add Post | Backend Development &amp; System Design </title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="language" content="English">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="py-12">
+
+  <section class="container mx-auto px-4 max-w-3xl">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2">
+        <span class="text-green-400">fn</span> update_post<span
+          class="text-gray-500 font-[JetBrains_Mono]">(</span><span class="text-[#ff79c6]">new_details</span><span
+          class="text-gray-500 font-[JetBrains_Mono]">)</span>
+      </h1>
+      <p class="text-gray-300 text-md max-w-xl mx-auto">
+        <span class="text-[#6272a4] font-[JetBrains_Mono] hidden sm:inline">/// </span>
+        Update an existing post with new details, including the title, slug, summary, SEO Photo URL, tags and the main content
+      </p>
+    </header>
+
+    <!-- Form Card -->
+    <div class="bg-gray-800 p-6 rounded-lg border border-[#44475a] transition hover:shadow-md">
+      <form id="edit-post-form" class="space-y-6">
+        <!-- ID -->
+        <div>
+          <label for="id" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">id</span>: <span class="text-[#50fa7b]/80">i32</span>
+          </label>
+            <input type="text" id="id" name="id" required value="{{ id }}" readonly
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">id</span>: <span class="text-[#50fa7b]/80">u64</span>
+          </label>
+            <input type="text" id="date" name="date" required value="{{ date }}" readonly
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">
+        </div>
+
+        <!-- Title -->
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">title</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+            <input type="text" id="title" name="title" required placeholder="My Awesome Post" value="{{ title }}"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="slug" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">slug</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <input type="text" id="slug" name="slug" required placeholder="my-awesome-post" value="{{ slug }}"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400 font-[JetBrains_Mono]">
+          <p class="text-xs text-gray-400 mt-1">use lowercase letters, numbers, and hyphens (e.g., my-post-title).</p>
+        </div>
+
+        <!-- Summary -->
+        <div>
+          <label for="summary" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">summary</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <textarea id="summary" name="summary" rows="4" required placeholder="A brief summary of your post..." 
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">{{ summary }}</textarea>
+          <p id="summary-error" class="text-xs text-red-500 mt-1 hidden"></p>
+          <p id="summary-counter" class="text-xs text-gray-400 mt-1">0/160</p>
+        </div>
+
+        <!-- Photo URL -->
+        <div>
+          <label for="photo_url" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">photo_url</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <input type="url" id="photo_url" name="photo_url" placeholder="/assets/images/post-image.jpg" required value="{{ photo_url }}"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1nous focus:ring-green-400">
+          <p class="text-xs text-gray-400 mt-1">url to a post image (e.g., hosted in /assets/images).</p>
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label for="tags" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">tags</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <input type="text" id="tags" name="tags" placeholder="rust, docker, api" required value="{{ tags }}"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400 font-[JetBrains_Mono]">
+          <p class="text-xs text-gray-400 mt-1">comma-separated tags (e.g., rust, docker, api).</p>
+        </div>
+
+        <!-- Content -->
+        <div>
+          <label for="content" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">content</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <textarea id="content" name="content" rows="40" required
+            placeholder="# My Post\n\nWrite your Markdown content here..."
+    class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400 font-[JetBrains_Mono]">{{ content }}</textarea>
+          <p id="content-error" class="text-xs text-red-500 mt-1 hidden"></p>
+          <p id="content-counter" class="text-xs text-gray-400 mt-1">0/100000</p>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">admin password</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+          <input type="password" id="password" name="password" placeholder="Enter your admin password" required
+            autocomplete="current-password"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1nous focus:ring-green-400">
+          <p class="text-xs text-gray-400 mt-1">your admin password</p>
+        </div>
+
+        <div class="cf-turnstile" data-sitekey="{{ &crate::config::ENV.turnstile_site_key }}" data-callback="onSubmit"
+          data-size="invisible">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end group">
+          <button type="submit" hx-trigger="click" hx-post="/api/components/posts/edit" hx-target="#post-status"
+            hx-swap="innerHTML" hx-disabled-elt="this" hx-indicator="#spinner"
+            class="px-4 py-2 bg-[#44475a] text-gray-300 font-medium rounded-md transition font-[JetBrains_Mono]">
+            <span class="button-text text-[#50fa7b]/80">edit_post</span><span class="text-gray-300">(<i id="spinner"
+                class="htmx-indicator fa-solid fa-spinner animate-spin"></i>)</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Status Area -->
+      <div id="post-status" class="mt-6"></div>
+    </div>
+  </section>
+</main>
+
+{% call super() %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/assets/js/edit-post/edit-post.js">
+</script>
+{% endblock %}
