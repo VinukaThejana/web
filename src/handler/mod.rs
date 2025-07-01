@@ -13,14 +13,15 @@ use axum::{
     response::IntoResponse,
 };
 use chrono::{DateTime, Utc};
+use redis::RedisResult;
 use serde_json::json;
 
 use crate::{
     cache::{self},
     config::{ENV, state::AppState},
-    error::HtmlError,
+    error::{AppError, HtmlError},
     model::post::PartialPostWithSlug,
-    util::{self, POST_LIMIT},
+    util::{self, Cache, POST_LIMIT},
 };
 
 pub async fn health() -> impl IntoResponse {
@@ -212,5 +213,44 @@ pub async fn site_xml(State(state): State<AppState>) -> Result<impl IntoResponse
         StatusCode::OK,
         [(header::CONTENT_TYPE, "application/xml")],
         xml,
+    ))
+}
+
+pub async fn robots_txt(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
+    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let ck = format!("{}:robots.txt", &ENV.redis_schema);
+
+    let payload: Option<String> = redis::cmd("GET")
+        .arg(&ck)
+        .query_async(&mut conn)
+        .await
+        .map_err(|e| AppError::Other(e.into()))?;
+
+    if let Some(content) = payload {
+        Cache::HIT.log(&ck);
+        return Ok((
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "text/plain")],
+            content,
+        ));
+    }
+    Cache::MISS.log(&ck);
+
+    let content = fs::read_to_string("assets/robots.txt").map_err(AppError::from_generic_error)?;
+    tokio::spawn(async move {
+        let result: RedisResult<()> = redis::cmd("SET")
+            .arg(&ck)
+            .arg(&content)
+            .query_async(&mut conn)
+            .await;
+        if let Err(e) = result {
+            log::error!("failed to cache robots.txt: {:?}", e);
+        }
+    });
+
+    Ok((
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, "text/plain")],
+        fs::read_to_string("assets/robots.txt").map_err(AppError::from_generic_error)?,
     ))
 }

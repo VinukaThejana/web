@@ -50,6 +50,7 @@ async fn main() -> anyhow::Result<()> {
                 .nest("/components", Router::new().merge(components::routes())),
         )
         .route("/sitemap.xml", get(handler::site_xml))
+        .route("/robots.txt", get(handler::robots_txt))
         .route("/favicon.ico", get(handler::favicon))
         .route("/apple-touch-icon.png", get(handler::apple_icon))
         .route(

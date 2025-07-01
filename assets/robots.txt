@@ -1,0 +1,47 @@
+# #######################################################
+# # robots.txt file for vinuka.dev                    #
+# # Last updated: July 1, 2025 by Vinuka              #
+# #######################################################
+
+
+# ------------------------------------------------------------------------------
+# Universal Rules for All Bots
+# ------------------------------------------------------------------------------
+
+User-agent: *
+
+Disallow: /upload/
+Disallow: /short/
+Disallow: /posts/*/edit
+Disallow: /posts/del$
+Disallow: /posts/add$
+
+User-agent: Googlebot
+
+# You can add specific rules for Googlebot here if needed.
+# For example, you might want to block it from crawling certain ad-related scripts.
+# Disallow: /ads/
+
+# ------------------------------------------------------------------------------
+# Rules for Other Specific Bots (e.g., Bingbot)
+# ------------------------------------------------------------------------------
+
+User-agent: Bingbot
+
+# You can add specific rules for Bingbot here.
+
+# ------------------------------------------------------------------------------
+# Sitemap Location
+# It's a best practice to include the full URL of your sitemap.
+# ------------------------------------------------------------------------------
+
+
+# Add rules for AI bots
+
+User-agent: Google-Extended
+User-agent: GPTBot
+User-agent: CCBot
+User-agent: anthropic-ai
+User-agent: Oigebot
+
+Sitemap: https://vinuka.dev/sitemap.xml
