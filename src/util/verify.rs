@@ -3,7 +3,7 @@ use validator::ValidationError;
 
 pub fn slug(slug: &str) -> Result<(), ValidationError> {
     let checks = [
-        (slug.len() < 5, "slug must be greater than 5 characters"),
+        (slug.len() < 2, "slug must be greater than 2 characters"),
         (slug.len() > 30, "slug must be less than 30 characters"),
         (
             !slug
@@ -24,7 +24,7 @@ pub fn slug(slug: &str) -> Result<(), ValidationError> {
 
 pub fn key(key: &str) -> Result<(), ValidationError> {
     let checks = [
-        (key.len() < 5, "key must be greater than 5 characters"),
+        (key.len() < 2, "key must be greater than 2 characters"),
         (key.len() > 30, "key must be less than 20 characters"),
         (
             !key.chars()
