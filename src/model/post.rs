@@ -79,6 +79,13 @@ pub struct AddPost {
     ))]
     pub title: String,
 
+    #[validate(length(
+        min = 5,
+        max = 255,
+        message = "seo_title must be between 5 and 255 characters"
+    ))]
+    pub seo_title: String,
+
     #[validate(custom(function = "verify::slug"))]
     pub slug: String,
 
@@ -121,6 +128,13 @@ pub struct EditPost {
         message = "title must be between 5 and 50 characters"
     ))]
     pub title: String,
+
+    #[validate(length(
+        min = 5,
+        max = 255,
+        message = "seo_title must be between 5 and 255 characters"
+    ))]
+    pub seo_title: String,
 
     #[validate(custom(function = "verify::slug"))]
     pub slug: String,

@@ -52,6 +52,7 @@ pub async fn run(
         &entity::post::Model {
             id: payload.id,
             title: payload.title,
+            seo_title: payload.seo_title,
             slug: payload.slug,
             photo_url: payload.photo_url,
             content: payload.content,

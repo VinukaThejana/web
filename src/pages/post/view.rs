@@ -1,9 +1,9 @@
 use crate::{
     cache::post::{gck_for_slug, gct_for_slug},
-    config::{ENV, state::AppState},
+    config::state::AppState,
     database,
     error::{AppError, HtmlError},
-    util::{Cache, NON_EXISTENT_KEY, html, parser::cmark},
+    util::{Cache, NON_EXISTENT_KEY, get_domain, html, parser::cmark},
 };
 use askama::Template;
 use axum::{
@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 #[template(path = "posts/view.html")]
 pub struct Tmpl<'a> {
     pub title: &'a str,
+    pub seo_title: &'a str,
     pub image_url: &'a str,
     pub summary: &'a str,
     pub content: &'a str,
@@ -30,6 +31,7 @@ pub struct Tmpl<'a> {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PostCache {
     title: String,
+    seo_title: String,
     image_url: String,
     summary: String,
     content: String,
@@ -56,10 +58,11 @@ impl From<entity::post::Model> for PostCache {
 
         Self {
             title: value.title,
+            seo_title: value.seo_title,
             image_url: value.photo_url,
             summary: value.summary,
             content: value.content,
-            url: value.slug,
+            url: format!("{}/posts/{}", get_domain(), value.slug),
             keywords: value.tags,
             date,
         }
@@ -91,6 +94,7 @@ pub async fn render(
         let post_cache = PostCache::from_cache(&content);
         let post = Tmpl {
             title: &post_cache.title,
+            seo_title: &post_cache.seo_title,
             image_url: &post_cache.image_url,
             summary: &post_cache.summary,
             content: &cmark(&post_cache.content),
@@ -128,11 +132,6 @@ pub async fn render(
 
     let post = post.unwrap();
     let post: PostCache = post.into();
-    let domain = if (*ENV.domain).ends_with("/") {
-        format!("{}{}", &*ENV.domain, &slug)
-    } else {
-        format!("{}/{}", &*ENV.domain, &slug)
-    };
 
     let cache = post.to_cache();
     tokio::spawn(async move {
@@ -152,10 +151,11 @@ pub async fn render(
 
     let post = Tmpl {
         title: &post.title,
+        seo_title: &post.seo_title,
         image_url: &post.image_url,
         summary: &post.summary,
         content: &cmark(&post.content),
-        url: &domain,
+        url: &post.url,
         keywords: &post.keywords,
         date: &post.date,
         word_count: words_count::count(&post.content).words,

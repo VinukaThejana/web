@@ -3,10 +3,6 @@
 {% block head %}
 <title>Add Post | Backend Development &amp; System Design </title>
 <meta name="robots" content="noindex, nofollow">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="language" content="English">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
 
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endblock %}
@@ -37,6 +33,15 @@
             <span class="text-[#ff79c6]/80">title</span>: <span class="text-[#50fa7b]/80">String</span>
           </label>
           <input type="text" id="title" name="title" required placeholder="My Awesome Post"
+            class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">
+        </div>
+
+        <!-- SEO Title -->
+        <div>
+          <label for="seo_title" class="block text-sm font-medium text-gray-300 mb-1 font-[JetBrains_Mono]">
+            <span class="text-[#ff79c6]/80">seo_title</span>: <span class="text-[#50fa7b]/80">String</span>
+          </label>
+            <input type="text" id="seo_title" name="seo_title" required placeholder="A title that the search engines will love"
             class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-green-400">
         </div>
 

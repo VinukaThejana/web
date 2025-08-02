@@ -239,3 +239,11 @@ pub fn governer_conf() -> Arc<GovernorConfig<SmartIpKeyExtractor, NoOpMiddleware
             .unwrap(),
     )
 }
+
+pub fn get_domain() -> String {
+    let domain = &*ENV.domain;
+    match domain.ends_with("/") {
+        true => domain.trim_end_matches('/').to_string(),
+        false => domain.to_string(),
+    }
+}

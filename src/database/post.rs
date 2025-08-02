@@ -104,6 +104,7 @@ pub async fn update(db: &DatabaseConnection, post: &entity::post::Model) -> Resu
     entity::post::Entity::update_many()
         .set(entity::post::ActiveModel {
             title: Set(post.title.to_owned()),
+            seo_title: Set(post.seo_title.to_owned()),
             slug: Set(post.slug.to_owned()),
             summary: Set(post.summary.to_owned()),
             photo_url: Set(post.photo_url.to_owned()),
@@ -125,6 +126,7 @@ pub async fn get_total_posts(db: &DatabaseConnection) -> Result<u64, DbErr> {
 pub async fn add(db: &DatabaseConnection, payload: &AddPost) -> Result<(), DbErr> {
     let post = entity::post::ActiveModel {
         title: Set(payload.title.to_owned()),
+        seo_title: Set(payload.seo_title.to_owned()),
         slug: Set(payload.slug.to_owned()),
         summary: Set(payload.summary.to_owned()),
         photo_url: Set(payload.photo_url.to_owned()),

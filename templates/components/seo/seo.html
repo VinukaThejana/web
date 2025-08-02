@@ -3,6 +3,7 @@
 {% set seo_description = "A developer's blog sharing reflective posts on personal experiences, system design, Rust/Go, to help others navigate their programming journey" %}
 {% set seo_keywords = "backend development, system design, database modeling, performance tuning, Rust programming, Go programming, backend architecture, engineering notes, software development blog, developer experiences, journey into programming" %}
 {% set seo_image = "https://res.cloudinary.com/ddhhebpcx/image/upload/f_auto,q_auto/v1/web/logo/logo.png" %}
+{% set base_domain = &crate::config::ENV.domain.trim_end_matches('/') %}
 
 <title>{% block title %}{{ title }}{% endblock %} | {{ seo_title }} </title>
 <meta name="description"
@@ -11,32 +12,25 @@
 <meta name="keywords"
   content="{{ seo_keywords }}">
 
-<!-- Open Graph / Facebook -->
 <meta property="og:title" content="{{ title }} | {{ seo_title }}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="{{ &crate::config::ENV.domain }}">
+<meta property="og:url" content="{{ base_domain }}{{ path }}">
 <meta property="og:description"
   content="{{ seo_description }}">
 <meta property="og:image" content="{{ seo_image }}">
 
-<!-- Twitter -->
 <meta property="twitter:title"
   content="{{ title }} | {{ seo_title }}">
 <meta property="twitter:card" content="summary">
-<meta property="twitter:url" content="{{ &crate::config::ENV.domain }}">
+<meta property="twitter:url" content="{{ base_domain }}{{ path }}">
 <meta property="twitter:description"
   content="{{ seo_description }}">
 <meta property="twitter:image" content="{{ seo_image }}">
 <meta name="twitter:creator" content="{{ crate::util::AUTHOR_TWITTER }}">
 
-<!-- Technical SEO -->
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="language" content="English">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="{{ base_domain }}{{ path }}" />
 
-<!-- Schema.org markup for Google -->
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -47,11 +41,11 @@
       "@type": "Person",
       "name": "{{ crate::util::AUTHOR }}",
       "jobTitle": "Backend Developer",
-      "url": "{{ &crate::config::ENV.domain }}"
+      "url": "{{ base_domain }}{{ path }}"
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "{{ &crate::config::ENV.domain }}"
+      "@id": "{{ base_domain }}{{ path }}"
     }
   }
 </script>

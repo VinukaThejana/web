@@ -8,6 +8,7 @@ enum Post {
     Table,
     Id,
     Title,
+    SEOTitle,
     Slug,
     PhotoURL,
     Date,
@@ -28,6 +29,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(integer(Post::Id).primary_key().auto_increment())
                     .col(string(Post::Title).string_len(255))
+                    .col(string(Post::SEOTitle).string_len(255))
                     .col(string(Post::Slug).string_len(255).unique_key())
                     .col(string(Post::PhotoURL).string_len(255))
                     .col(string(Post::Tags).string_len(255))
