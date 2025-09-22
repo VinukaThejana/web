@@ -43,7 +43,7 @@ pub async fn get(db: &DatabaseConnection, key: &str) -> Result<entity::short::Mo
 pub async fn get_all(db: &DatabaseConnection) -> Result<Vec<entity::short::Model>, DbErr> {
     entity::short::Entity::find()
         .order_by_desc(entity::short::Column::CreatedAt)
-        .limit(100)
+        .limit(1000)
         .all(db)
         .await
 }
