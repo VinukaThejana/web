@@ -22,17 +22,18 @@
       </span>
     </h2>
 
-    <!-- Key Input -->
     <div>
       <label for="key" class="block mb-1 text-sm text-gray-300">
         <span class="text-[#ff79c6]/80">key</span>: <span class="text-[#50fa7b]/80">String</span>
       </label>
       <input type="text" id="key" name="key" placeholder="bucket/folder1/folder2/payload"
         class="w-full px-3 py-2 bg-gray-700 border border-[#44475a] rounded-md text-gray-300 focus:outline-none focus:ring-1 focus:ring-[#50fa7b] font-[JetBrains_Mono]"
+        {% if let Some(default_key) = key %}
+          value="{{ default_key }}"
+        {% endif %}
         required>
     </div>
 
-    <!-- Admin Password -->
     <div>
       <label for="password" class="block mb-1 text-sm text-gray-300">
         <span class="text-[#ff79c6]/80">admin_password</span>: <span class="text-[#50fa7b]/80">String</span>
@@ -42,12 +43,10 @@
         required>
     </div>
 
-    <!-- Cloudflare Turnstile -->
     <div class="cf-turnstile" data-sitekey="{{ &crate::config::ENV.turnstile_site_key }}" data-callback="onSubmit"
       data-size="invisible">
     </div>
 
-    <!-- Submit Button -->
     <div class="flex justify-end group">
       <button type="submit" hx-trigger="click" hx-post="/api/components/upload/del" hx-target="#del-status"
         hx-swap="innerHTML" hx-disabled-elt="this" hx-indicator="#spinner"
@@ -57,7 +56,6 @@
       </button>
     </div>
 
-    <!-- Status Area -->
     <div id="del-status" class="mt-6"></div>
   </div>
 </form>

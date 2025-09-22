@@ -16,8 +16,10 @@
   <div class="space-y-4">
     {% for object in objects %}
     <div id="{{ object.path }}" class="bg-gray-700 p-4 rounded-md border border-[#44475a] hover:border-[#50fa7b]/50 hover:shadow-md transition">
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div class="space-y-1">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] sm:items-center gap-4">
+        
+        <div class="space-y-1 min-w-0">
           <div class="text-sm font-[JetBrains_Mono] text-[#50fa7b]/80 truncate">
             <span class="text-[#ff79c6]/80">path</span>: <span class="text-gray-300">{{ object.path }}</span>
           </div>
@@ -28,20 +30,29 @@
             <span class="text-[#ff79c6]/80">last_modified</span>: <span class="text-gray-300">{{ object.modified }}</span>
           </div>
         </div>
+        
         <div class="flex flex-col sm:flex-row justify-end gap-2">
           <button onclick="navigator.clipboard.writeText('https://blob.vinuka.dev/{{ object.path }}')"
-            class="px-4 py-2 bg-[#44475a] hover:bg-[#50fa7b] hover:text-green-400 text-gray-300 font-[JetBrains_Mono] text-sm rounded-md transition">
+            class="px-4 py-2 bg-[#44475a] hover:bg-[#282a36] cursor-pointer hover:text-green-400 text-gray-300 font-[JetBrains_Mono] text-sm rounded-md transition">
             Copy
           </button>
+          
           <a href="https://blob.vinuka.dev/{{ object.path }}" target="_blank" rel="noopener noreferrer"
-            class="px-4 py-2 bg-[#44475a] hover:bg-[#50fa7b] hover:text-green-400 text-gray-300 font-[JetBrains_Mono] text-sm rounded-md transition text-center">
+            class="px-4 py-2 bg-[#44475a] hover:bg-[#282a36] hover:text-green-400 text-gray-300 font-[JetBrains_Mono] text-sm rounded-md transition text-center">
             View
           </a>
+
+        <a href="http://localhost:8080/upload/delete?key={{ object.path | urlencode }}"
+          class="px-4 py-2 bg-[#44475a] text-gray-300 font-[JetBrains_Mono] text-sm rounded-md transition text-center hover:bg-[#ff5555] hover:text-white"
+        >
+          Delete
+        </a>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
+
   <form method="get" action="" class="mt-8 flex justify-end w-full">
     <input type="hidden" name="key" value="{{ next_key }}">
     <button type="submit" {% if has_next %}

@@ -1,19 +1,29 @@
 use crate::{error::HtmlError, util::html};
 use askama::Template;
-use axum::response::IntoResponse;
+use axum::{extract::Query, response::IntoResponse};
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct DeleteQuery {
+    key: Option<String>,
+}
 
 #[derive(Template)]
 #[template(path = "upload/delete.html")]
 pub struct Tmpl {
     pub active: &'static str,
+    pub key: Option<String>,
 }
 
-impl Default for Tmpl {
-    fn default() -> Self {
-        Self { active: "delete" }
+impl Tmpl {
+    pub fn new(key: Option<String>) -> Self {
+        Self {
+            active: "delete",
+            key,
+        }
     }
 }
 
-pub async fn render() -> Result<impl IntoResponse, HtmlError> {
-    html::render(Tmpl::default())
+pub async fn render(Query(query): Query<DeleteQuery>) -> Result<impl IntoResponse, HtmlError> {
+    html::render(Tmpl::new(query.key))
 }
