@@ -37,8 +37,6 @@ pub async fn run(
     Ok(Json(json!({
         "status": "success",
         "message": "Short URL added successfully",
-        "data": {
-            "short_url": format!("{}/{}", &*ENV.domain, &payload.key),
-        }
+        "short_url": format!("{}/{}", &*ENV.domain, &payload.key),
     })))
 }
