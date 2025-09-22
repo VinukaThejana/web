@@ -60,6 +60,22 @@ pub struct AddShort {
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Validate)]
+pub struct AddShortAPI {
+    #[validate(url)]
+    pub long_url: String,
+
+    #[validate(custom(function = "verify::slug"))]
+    pub key: String,
+
+    #[validate(length(
+        min = 1,
+        max = 160,
+        message = "description must be between 1 and 160 characters"
+    ))]
+    pub description: String,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Validate)]
 pub struct DelShort {
     #[validate(custom(function = "verify::slug"))]
     pub key: String,

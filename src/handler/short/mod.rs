@@ -1,6 +1,7 @@
 use askama::Template;
 
 pub mod add;
+pub mod add_api;
 pub mod delete;
 pub mod verify;
 
