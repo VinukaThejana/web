@@ -10,6 +10,10 @@ use axum::{
     extract::{ConnectInfo, State},
     response::IntoResponse,
 };
+use axum_extra::{
+    TypedHeader,
+    headers::{Authorization, authorization::Bearer},
+};
 use serde_json::json;
 use std::{net::SocketAddr, time::Duration};
 use validator::Validate;
@@ -17,13 +21,22 @@ use validator::Validate;
 pub async fn run(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
+    authorization: Option<TypedHeader<Authorization<Bearer>>>,
     Json(payload): Json<r2::Payload>,
 ) -> Result<impl IntoResponse, JsonError> {
     let ip = addr.ip().to_string();
 
-    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+    let mut is_authorized = false;
+    if let Some(TypedHeader(auth)) = authorization
+        && auth.token() == &*ENV.turnstile_site_secret
+    {
+        is_authorized = true;
+    }
+
+    if !is_authorized && !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return Err(AppError::CaptchaFailed(anyhow::anyhow!("captcha failed")).into());
     }
+
     payload.validate()?;
     if payload.password != (*ENV.admin_password) {
         return Err(AppError::Unauthorized(anyhow::anyhow!("password is incorrect")).into());
