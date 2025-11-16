@@ -5,6 +5,7 @@
 
 <link rel="stylesheet" href="/assets/css/post.min.css">
 <link rel="stylesheet" href="/assets/css/dracula.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
 {% endblock %}
 
 {% block content %}
@@ -33,6 +34,22 @@
 
 {% block scripts %}
 {% include "components/article/highlight.html" %}
-<script src="/assets/js/post/post.min.js">
+<script src="/assets/js/post/post.min.js"></script>
+
+<!-- Add KaTeX JS -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('span.math').forEach(function(el) {
+      const isDisplay = el.classList.contains('math-display');
+      const texContent = el.textContent;
+      
+      katex.render(texContent, el, {
+        displayMode: isDisplay,
+        throwOnError: false,
+        output: 'html'
+      });
+    });
+  });
 </script>
 {% endblock %}
