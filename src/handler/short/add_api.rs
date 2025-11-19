@@ -25,18 +25,15 @@ pub async fn run(
     }
     payload.validate()?;
 
-    database::short::add(
-        &state.db,
-        &payload.long_url,
-        &payload.key,
-        &payload.description,
-    )
-    .await
-    .map_err(AppError::from_database_error)?;
+    let key = payload.key.trim_matches('/');
+
+    database::short::add(&state.db, &payload.long_url, key, &payload.description)
+        .await
+        .map_err(AppError::from_database_error)?;
 
     Ok(Json(json!({
         "status": "success",
         "message": "Short URL added successfully",
-        "short_url": format!("{}/{}", &*ENV.domain, &payload.key),
+        "short_url": format!("{}/{}", &*ENV.domain, key),
     })))
 }
