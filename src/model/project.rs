@@ -5,6 +5,7 @@ pub struct Project {
     pub id: i32,
     pub title: String,
     pub description: String,
+    pub url: String,
     pub tags: Vec<String>,
     pub date: String,
 }
@@ -14,6 +15,7 @@ impl Project {
         id: i32,
         title: String,
         description: String,
+        url: String,
         tags: Vec<String>,
         date: String,
     ) -> Self {
@@ -21,6 +23,7 @@ impl Project {
             id,
             title,
             description,
+            url,
             tags,
             date,
         }
@@ -39,6 +42,7 @@ impl ToProjects for Vec<entity::project::Model> {
                     project.id,
                     project.title.clone(),
                     project.description.clone(),
+                    project.url.clone(),
                     project
                         .tags
                         .split(",")
