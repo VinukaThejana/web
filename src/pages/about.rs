@@ -37,9 +37,9 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
         .await
         .map_err(|e| AppError::Other(e.into()))
         .unwrap_or(None);
-    if payload.is_some() {
+    if let Some(payload) = payload {
         Cache::HIT.log(&ck);
-        about.projects = from_cache(&payload.unwrap());
+        about.projects = from_cache(&payload);
         return Html(about.render().unwrap());
     }
 

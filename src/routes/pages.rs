@@ -2,7 +2,7 @@ use axum::Router;
 use axum::routing::get;
 
 use crate::config::state::AppState;
-use crate::pages::{about, blog, index, key, post, short, upload};
+use crate::pages::{about, blog, index, key, post, resume, short, upload};
 
 pub fn routes() -> Router<AppState> {
     Router::new()
@@ -10,6 +10,7 @@ pub fn routes() -> Router<AppState> {
         .route("/about", get(about::render))
         .route("/blog/{page}", get(blog::paginated))
         .route("/{key}", get(key::render))
+        .route("/get-resume", get(resume::render))
         .nest(
             "/posts",
             Router::new()

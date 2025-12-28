@@ -3,6 +3,7 @@ pub mod blog;
 pub mod index;
 pub mod key;
 pub mod post;
+pub mod resume;
 pub mod short;
 pub mod status;
 pub mod upload;

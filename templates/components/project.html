@@ -1,7 +1,14 @@
 <div class="p-5 bg-gray-800 rounded-lg border border-[#44475a] transition hover:shadow-md">
-  <h3 class="text-xl font-bold mb-2 text-gray-300"><span class="text-green-400">{{ project.title }}</span></h3>
+  <h3 class="text-xl font-bold mb-2 text-gray-300">
+    <i class="fa-solid fa-link"></i>
+    <span class="text-green-400">
+      <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer">
+        {{ project.title }}
+      </a>
+    </span>
+  </h3>
   <p class="text-gray-300 text-sm mb-3 leading-relaxed">
-    {{ project.description }}
+    {{ project.description | safe }}
   </p>
   <div class="flex flex-wrap gap-2 mb-3">
     {% for tag in project.tags %}
