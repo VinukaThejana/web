@@ -49,9 +49,7 @@ pub async fn paginated(
         Cache::HIT.log(&ck);
         blog.posts = from_cache(&payload);
         if blog.posts.is_empty() {
-            return Err(
-                AppError::NotFound(anyhow::anyhow!("No posts found for page {}", page)).into(),
-            );
+            return Err(AppError::not_found(format!("No posts found for page {}", page)).into());
         }
         return html::render(blog);
     }
@@ -80,7 +78,7 @@ pub async fn paginated(
     });
 
     if posts.is_empty() {
-        return Err(AppError::NotFound(anyhow::anyhow!("No posts found for page {}", page)).into());
+        return Err(AppError::not_found(format!("No posts found for page {}", page)).into());
     }
 
     blog.posts = posts;

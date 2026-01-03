@@ -41,7 +41,7 @@ pub async fn run(
     {
         log::error!("failed to delete key from the database: {}", e);
         match e {
-            AppError::NotFound(_) => {
+            AppError::NotFound { .. } => {
                 return html::render(Invalid::new(FORM_ID, "key is not found"));
             }
             _ => {

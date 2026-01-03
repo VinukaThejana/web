@@ -21,7 +21,7 @@ pub async fn run(
         authorization,
         Some(TypedHeader(auth)) if auth.token() == &*ENV.turnstile_site_secret
     ) {
-        return Err(AppError::Unauthorized(anyhow::anyhow!("password is incorrect")).into());
+        return Err(AppError::unauthorized("password is not correct").into());
     }
     payload.validate()?;
 

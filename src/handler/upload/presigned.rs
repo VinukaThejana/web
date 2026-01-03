@@ -34,12 +34,12 @@ pub async fn run(
     }
 
     if !is_authorized && !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
-        return Err(AppError::CaptchaFailed(anyhow::anyhow!("captcha failed")).into());
+        return Err(AppError::captcha("captcha failed").into());
     }
 
     payload.validate()?;
     if payload.password != (*ENV.admin_password) {
-        return Err(AppError::Unauthorized(anyhow::anyhow!("password is incorrect")).into());
+        return Err(AppError::unauthorized("password is incorrect").into());
     }
 
     let presigned_url = state

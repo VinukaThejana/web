@@ -19,30 +19,25 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     let mut url = short.long_url;
     // https://docs.google.com/document/d/1uOOD2jIkuyOUloVVQ6V5rGUtiImiurZ1kHKShmLxTjc/edit?usp=sharing
     if url.is_empty() || !url.contains("docs.google.com/document/d/") {
-        return Err(AppError::NotFound(anyhow::anyhow!("page not found")).into());
+        return Err(AppError::not_found("page not found").into());
     }
     let id = url
         .strip_prefix("https://docs.google.com/document/d/")
         .or_else(|| url.split("/d/").nth(1))
         .and_then(|s| s.split('/').next())
-        .ok_or_else(|| AppError::NotFound(anyhow::anyhow!("page not found")))?;
+        .ok_or_else(|| AppError::not_found("page not found"))?;
     url = format!(
         "https://docs.google.com/document/d/{}/export?format=pdf",
         id
     );
 
     let client = reqwest::Client::new();
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(AppError::from_generic_error)?;
+    let resp = client.get(&url).send().await?;
     if !resp.status().is_success() {
-        return Err(AppError::NotFound(anyhow::anyhow!("page not found")).into());
+        return Err(AppError::not_found("page not found").into());
     }
 
-    let bytes = resp.bytes().await.map_err(AppError::from_generic_error)?;
-
+    let bytes = resp.bytes().await?;
     let mut headers = HeaderMap::new();
 
     headers.insert(header::CONTENT_TYPE, "application/pdf".parse().unwrap());

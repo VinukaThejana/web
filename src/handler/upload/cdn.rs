@@ -16,14 +16,14 @@ use validator::Validate;
 pub async fn run(Json(payload): Json<cdn::Payload>) -> Result<impl IntoResponse, JsonError> {
     payload.validate()?;
     if payload.password != (*ENV.admin_password) {
-        return Err(AppError::Unauthorized(anyhow::anyhow!("password is incorrect")).into());
+        return Err(AppError::unauthorized("password is incorrect").into());
     }
 
     if !IMG_EXTENSIONS
         .iter()
         .any(|ext| payload.path.to_lowercase().ends_with(ext))
     {
-        return Err(AppError::BadRequest(anyhow::anyhow!("only image files are allowed")).into());
+        return Err(AppError::bad_request("only image files are allowed").into());
     }
     let path = match payload.path.rfind(".") {
         Some(idx) => payload.path[0..idx].to_string(),
@@ -76,8 +76,7 @@ pub async fn run(Json(payload): Json<cdn::Payload>) -> Result<impl IntoResponse,
         ))
         .form(&form)
         .send()
-        .await
-        .map_err(AppError::from_generic_error)?;
+        .await?;
 
     if !response.status().is_success() {
         return Err(

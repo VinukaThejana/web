@@ -1,4 +1,5 @@
 pub mod contact;
+pub mod metadata;
 pub mod newsletter;
 pub mod posts;
 pub mod short;
@@ -236,7 +237,7 @@ pub async fn robots_txt(State(state): State<AppState>) -> Result<impl IntoRespon
     }
     Cache::MISS.log(&ck);
 
-    let content = fs::read_to_string("assets/robots.txt").map_err(AppError::from_generic_error)?;
+    let content = fs::read_to_string("assets/robots.txt")?;
     tokio::spawn(async move {
         let result: RedisResult<()> = redis::cmd("SET")
             .arg(&ck)
@@ -251,6 +252,6 @@ pub async fn robots_txt(State(state): State<AppState>) -> Result<impl IntoRespon
     Ok((
         StatusCode::OK,
         [(header::CONTENT_TYPE, "text/plain")],
-        fs::read_to_string("assets/robots.txt").map_err(AppError::from_generic_error)?,
+        fs::read_to_string("assets/robots.txt")?,
     ))
 }

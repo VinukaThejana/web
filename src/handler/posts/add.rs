@@ -56,7 +56,7 @@ pub async fn run(
         .map_err(AppError::from_database_error)
     {
         match e {
-            AppError::UniqueViolation(_) => {
+            AppError::UniqueViolation { .. } => {
                 return html::render(Invalid::new(FORM_ID, "post with this slug already exists"));
             }
             _ => {

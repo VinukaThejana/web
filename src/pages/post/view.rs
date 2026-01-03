@@ -86,9 +86,7 @@ pub async fn render(
         Cache::HIT.log(&ck);
 
         if content == NON_EXISTENT_KEY {
-            return Err(
-                AppError::NotFound(anyhow::anyhow!("post with slug {} not found", slug)).into(),
-            );
+            return Err(AppError::not_found(format!("post with slug {} not found", slug)).into());
         }
 
         let post_cache = PostCache::from_cache(&content);
@@ -126,8 +124,12 @@ pub async fn render(
             Cache::SET.log(&ck);
         });
 
-        log::error!("post not found: {:?}", e);
-        return Err(AppError::NotFound(e.into()).into());
+        return Err(AppError::not_found_with_source(
+            "could not find the url for the given slug",
+            None,
+            e,
+        )
+        .into());
     }
 
     let post = post.unwrap();

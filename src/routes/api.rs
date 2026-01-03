@@ -1,5 +1,5 @@
 use crate::config::state::AppState;
-use crate::handler::{health, short, upload};
+use crate::handler::{health, metadata, short, upload};
 use axum::Router;
 use axum::routing::{get, post};
 
@@ -15,5 +15,9 @@ pub fn routes() -> Router<AppState> {
         .nest(
             "/short",
             Router::new().route("/add", post(short::add_api::run)),
+        )
+        .nest(
+            "/metadata",
+            Router::new().route("/video", post(metadata::video::get)),
         )
 }

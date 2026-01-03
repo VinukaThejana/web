@@ -14,7 +14,7 @@ pub async fn render(
     Path(key): Path<String>,
 ) -> Result<impl IntoResponse, HtmlError> {
     if key.is_empty() {
-        return Err(AppError::NotFound(anyhow::anyhow!("{} : page not found", key)).into());
+        return Err(AppError::not_found(format!("{} : page not found", key)).into());
     }
 
     // INFO: check weather social redirects are available with the given key

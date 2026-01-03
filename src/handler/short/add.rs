@@ -46,7 +46,7 @@ pub async fn run(
     {
         log::error!("failed to add key to the database: {}", e);
         match e {
-            AppError::UniqueViolation(_) => {
+            AppError::UniqueViolation { .. } => {
                 return html::render(Invalid::new(FORM_ID, "key is already in use"));
             }
             _ => return html::render(Failed::default()),

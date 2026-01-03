@@ -2,50 +2,178 @@ use crate::pages::status::{notfound, servererror};
 use askama::Template;
 use axum::{
     Json,
-    http::StatusCode,
+    http::{StatusCode, header},
     response::{Html, IntoResponse, Response},
 };
 use sea_orm::{DbErr, RuntimeErr};
 use serde_json::json;
-use std::fmt::Display;
 use validator::ValidationErrors;
+
+pub trait StdErrorExt: std::error::Error + Send + Sync + 'static {}
+impl<T> StdErrorExt for T where T: std::error::Error + Send + Sync + 'static {}
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    NotFound(#[source] anyhow::Error),
-    BadRequest(#[source] anyhow::Error),
-    UniqueViolation(#[source] anyhow::Error),
-    Unauthorized(#[source] anyhow::Error),
-    CaptchaFailed(#[source] anyhow::Error),
+    #[error("{user_message}")]
+    NotFound {
+        user_message: String,
+        internal_message: Option<String>,
+        #[source]
+        source: Option<anyhow::Error>,
+    },
+
+    #[error("{user_message}")]
+    BadRequest {
+        user_message: String,
+        internal_message: Option<String>,
+        #[source]
+        source: Option<anyhow::Error>,
+    },
+
+    #[error("{user_message}")]
+    UniqueViolation {
+        user_message: String,
+        internal_message: Option<String>,
+        #[source]
+        source: Option<anyhow::Error>,
+    },
+
+    #[error("{user_message}")]
+    Unauthorized {
+        user_message: String,
+        internal_message: Option<String>,
+        #[source]
+        source: Option<anyhow::Error>,
+    },
+
+    #[error("{user_message}")]
+    CaptchaFailed {
+        user_message: String,
+        internal_message: Option<String>,
+        #[source]
+        source: Option<anyhow::Error>,
+    },
+
+    #[error("{0}")]
     Validation(#[from] ValidationErrors),
+
+    #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
 
-impl Display for AppError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::NotFound(e) => write!(f, "{:?}", e),
-            Self::BadRequest(e) => write!(f, "{:?}", e),
-            Self::UniqueViolation(e) => write!(f, "{:?}", e),
-            Self::Unauthorized(e) => write!(f, "{:?}", e),
-            Self::CaptchaFailed(e) => write!(f, "{:?}", e),
-            Self::Validation(e) => {
-                let message = e
-                    .field_errors()
-                    .values()
-                    .flat_map(|e| e.iter())
-                    .filter_map(|err| {
-                        err.message
-                            .as_ref()
-                            .map(|msg| msg.to_string())
-                            .or(Some(String::from("invalid value")))
-                    })
-                    .next()
-                    .unwrap_or(String::from("invalid value"));
+impl AppError {
+    pub fn bad_request(msg: impl Into<String>) -> Self {
+        Self::BadRequest {
+            user_message: msg.into(),
+            internal_message: None,
+            source: None,
+        }
+    }
 
-                write!(f, "{}", message)
-            }
-            Self::Other(e) => write!(f, "{:?}", e),
+    pub fn bad_request_with_source<E>(
+        msg: impl Into<String>,
+        internal_message: Option<String>,
+        source: E,
+    ) -> Self
+    where
+        E: StdErrorExt,
+    {
+        Self::BadRequest {
+            user_message: msg.into(),
+            internal_message,
+            source: Some(anyhow::Error::new(source)),
+        }
+    }
+
+    pub fn not_found(msg: impl Into<String>) -> Self {
+        Self::NotFound {
+            user_message: msg.into(),
+            internal_message: None,
+            source: None,
+        }
+    }
+
+    pub fn not_found_with_source<E>(
+        msg: impl Into<String>,
+        internal_message: Option<String>,
+        source: E,
+    ) -> Self
+    where
+        E: StdErrorExt,
+    {
+        Self::NotFound {
+            user_message: msg.into(),
+            internal_message,
+            source: Some(anyhow::Error::new(source)),
+        }
+    }
+
+    pub fn unauthorized(msg: impl Into<String>) -> Self {
+        Self::Unauthorized {
+            user_message: msg.into(),
+            internal_message: None,
+            source: None,
+        }
+    }
+
+    pub fn unauthorized_with_source<E>(
+        msg: impl Into<String>,
+        internal_message: Option<String>,
+        source: E,
+    ) -> Self
+    where
+        E: StdErrorExt,
+    {
+        Self::NotFound {
+            user_message: msg.into(),
+            internal_message,
+            source: Some(anyhow::Error::new(source)),
+        }
+    }
+
+    pub fn conflict(msg: impl Into<String>) -> Self {
+        Self::UniqueViolation {
+            user_message: msg.into(),
+            internal_message: None,
+            source: None,
+        }
+    }
+
+    pub fn conflict_with_source<E>(
+        msg: impl Into<String>,
+        internal_message: Option<String>,
+        source: E,
+    ) -> Self
+    where
+        E: StdErrorExt,
+    {
+        Self::UniqueViolation {
+            user_message: msg.into(),
+            internal_message,
+            source: Some(anyhow::Error::new(source)),
+        }
+    }
+
+    pub fn captcha(msg: impl Into<String>) -> Self {
+        Self::CaptchaFailed {
+            user_message: msg.into(),
+            internal_message: None,
+            source: None,
+        }
+    }
+
+    pub fn captcha_with_source<E>(
+        msg: impl Into<String>,
+        internal_message: Option<String>,
+        source: E,
+    ) -> Self
+    where
+        E: StdErrorExt,
+    {
+        Self::CaptchaFailed {
+            user_message: msg.into(),
+            internal_message,
+            source: Some(anyhow::Error::new(source)),
         }
     }
 }
@@ -58,19 +186,120 @@ impl AppError {
         Self::Other(anyhow::Error::new(e))
     }
 
-    pub fn from_not_found_error<E>(e: E) -> Self
-    where
-        E: std::error::Error + Send + Sync + 'static,
-    {
-        Self::NotFound(anyhow::Error::new(e))
+    fn source_error(&self) -> Option<&anyhow::Error> {
+        match self {
+            AppError::BadRequest { source, .. }
+            | AppError::NotFound { source, .. }
+            | AppError::UniqueViolation { source, .. }
+            | AppError::Unauthorized { source, .. }
+            | AppError::CaptchaFailed { source, .. } => source.as_ref(),
+            _ => None,
+        }
+    }
+
+    fn internal_message(&self) -> Option<String> {
+        match self {
+            AppError::Other(e) => Some(format!("{:#}", e)),
+            AppError::BadRequest {
+                internal_message, ..
+            }
+            | AppError::NotFound {
+                internal_message, ..
+            }
+            | AppError::UniqueViolation {
+                internal_message, ..
+            }
+            | AppError::Unauthorized {
+                internal_message, ..
+            }
+            | AppError::CaptchaFailed {
+                internal_message, ..
+            } => internal_message.clone(),
+            _ => None,
+        }
+    }
+
+    fn get_tag(&self) -> String {
+        match self {
+            AppError::BadRequest { .. } => String::from("bad_request"),
+            AppError::NotFound { .. } => String::from("not_found"),
+            AppError::UniqueViolation { .. } => String::from("conflict"),
+            AppError::Unauthorized { .. } => String::from("unauthorized"),
+            AppError::CaptchaFailed { .. } => String::from("captcha_failed"),
+            AppError::Validation(_) => String::from("validation"),
+            AppError::Other(_) => String::from("other"),
+        }
+    }
+
+    fn get_user_message(&self) -> String {
+        match self {
+            AppError::BadRequest { user_message, .. }
+            | AppError::NotFound { user_message, .. }
+            | AppError::UniqueViolation { user_message, .. }
+            | AppError::Unauthorized { user_message, .. }
+            | AppError::CaptchaFailed { user_message, .. } => user_message.to_string(),
+            AppError::Validation(errs) => errs
+                .field_errors()
+                .values()
+                .flat_map(|v| v.iter())
+                .flat_map(|e| e.message.as_ref().map(|m| m.to_string()))
+                .next()
+                .unwrap_or_else(|| "invalid value".to_string()),
+            AppError::Other(_) => String::from("something went wrong"),
+        }
+    }
+
+    fn get_status_code(&self) -> StatusCode {
+        match self {
+            AppError::BadRequest { .. } => StatusCode::BAD_REQUEST,
+            AppError::NotFound { .. } => StatusCode::NOT_FOUND,
+            AppError::UniqueViolation { .. } => StatusCode::BAD_REQUEST,
+            AppError::Unauthorized { .. } => StatusCode::UNAUTHORIZED,
+            AppError::CaptchaFailed { .. } => StatusCode::BAD_REQUEST,
+            AppError::Validation(_) => StatusCode::BAD_REQUEST,
+            AppError::Other(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
+    fn log(&self) {
+        let tag = self.get_tag();
+        let msg = self
+            .internal_message()
+            .unwrap_or_else(|| String::from("something went wrong"));
+        let source = self.source_error();
+
+        match self {
+            AppError::Other(_) => {
+                if let Some(source) = source {
+                    log::error!("AppError [{}]: {} | source: {:#?}", tag, msg, source);
+                } else {
+                    log::error!("AppError [{}]: {}", tag, msg);
+                }
+            }
+            _ => {
+                if let Some(source) = source {
+                    log::warn!("AppError [{}]: {} | source: {:#?}", tag, msg, source);
+                } else {
+                    log::warn!("AppError [{}]: {}", tag, msg);
+                }
+            }
+        }
     }
 
     pub fn from_database_error(error: DbErr) -> Self {
         match error {
-            DbErr::RecordNotFound(err) => Self::NotFound(anyhow::anyhow!(err)),
+            DbErr::RecordNotFound(err) => Self::NotFound {
+                user_message: "record not found".to_string(),
+                internal_message: None,
+                source: Some(anyhow::anyhow!(err)),
+            },
             err => {
                 if is_unique_violation(&err) {
-                    Self::UniqueViolation(err.into())
+                    Self::UniqueViolation {
+                        user_message: "unique violation".to_string(),
+                        internal_message: None,
+                        source: Some(anyhow::anyhow!(err)),
+                    }
                 } else {
                     Self::Other(err.into())
                 }
@@ -80,108 +309,58 @@ impl AppError {
 }
 
 pub struct HtmlError(pub AppError);
-impl From<AppError> for HtmlError {
-    fn from(value: AppError) -> Self {
-        HtmlError(value)
+
+impl<E> From<E> for HtmlError
+where
+    E: Into<AppError>,
+{
+    fn from(err: E) -> Self {
+        HtmlError(err.into())
     }
 }
 
 pub struct JsonError(pub AppError);
-impl From<AppError> for JsonError {
-    fn from(value: AppError) -> Self {
-        JsonError(value)
-    }
-}
-impl From<ValidationErrors> for JsonError {
-    fn from(err: ValidationErrors) -> Self {
-        JsonError(AppError::Validation(err))
+
+impl<E> From<E> for JsonError
+where
+    E: Into<AppError>,
+{
+    fn from(err: E) -> Self {
+        JsonError(err.into())
     }
 }
 
 impl IntoResponse for HtmlError {
     fn into_response(self) -> Response {
-        match self.0 {
-            AppError::NotFound(error) => {
-                log::error!("not found error: {:?}", error);
-                (
-                    StatusCode::NOT_FOUND,
-                    Html(notfound::Tmpl::default().render().unwrap()),
-                )
-                    .into_response()
-            }
-            AppError::BadRequest(error) => {
-                log::error!("bad request error: {:?}", error);
-                unimplemented!()
-            }
-            AppError::UniqueViolation(error) => {
-                log::error!("unique violation error: {:?}", error);
-                unimplemented!()
-            }
-            AppError::Unauthorized(error) => {
-                log::error!("unauthorized error: {:?}", error);
-                unimplemented!()
-            }
-            AppError::CaptchaFailed(error) => {
-                log::error!("captcha failed error: {:?}", error);
-                unimplemented!()
-            }
-            AppError::Validation(validation_errors) => {
-                log::error!(
-                    "validation error: {}",
-                    AppError::Validation(validation_errors)
-                );
-                unimplemented!()
-            }
-            AppError::Other(error) => {
-                log::error!("internal server error: {:?}", error);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Html(servererror::Tmpl::default().render().unwrap()),
-                )
-                    .into_response()
-            }
-        }
+        let html = match self.0 {
+            AppError::NotFound { .. } => notfound::Tmpl::default().render().unwrap(),
+            AppError::BadRequest { .. } => unimplemented!(),
+            AppError::UniqueViolation { .. } => unimplemented!(),
+            AppError::Unauthorized { .. } => unimplemented!(),
+            AppError::CaptchaFailed { .. } => unimplemented!(),
+            AppError::Validation(_) => unimplemented!(),
+            AppError::Other(_) => servererror::Tmpl::default().render().unwrap(),
+        };
+
+        self.0.log();
+
+        (self.0.get_status_code(), Html(html)).into_response()
     }
 }
 
 impl IntoResponse for JsonError {
     fn into_response(self) -> Response {
-        let (status, message) = match self.0 {
-            AppError::NotFound(error) => {
-                log::error!("not found error: {:?}", error);
-                (StatusCode::NOT_FOUND, error.to_string())
-            }
-            AppError::BadRequest(error) => {
-                log::error!("bad request error: {:?}", error);
-                (StatusCode::BAD_REQUEST, error.to_string())
-            }
-            AppError::UniqueViolation(error) => {
-                log::error!("unique violation error: {:?}", error);
-                (StatusCode::BAD_REQUEST, String::from("unique violation"))
-            }
-            AppError::Unauthorized(error) => {
-                log::error!("unauthorized error: {:?}", error);
-                (StatusCode::UNAUTHORIZED, error.to_string())
-            }
-            AppError::CaptchaFailed(error) => {
-                log::error!("captcha failed error: {:?}", error);
-                (StatusCode::BAD_REQUEST, String::from("captcha failed"))
-            }
-            AppError::Validation(ve) => {
-                let ve = AppError::Validation(ve);
-                log::error!("validation errors : {}", ve);
-                (StatusCode::BAD_REQUEST, format!("{ve}"))
-            }
-            AppError::Other(error) => {
-                log::error!("internal server error: {:?}", error);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    String::from("internal server error"),
-                )
-            }
-        };
+        self.0.log();
 
-        (status, Json(json!({ "status": message }))).into_response()
+        (
+            self.0.get_status_code(),
+            [(header::CONTENT_TYPE, "application/json")],
+            Json(json!({
+                "status": self.0.get_tag(),
+                "message": self.0.get_user_message(),
+            })),
+        )
+            .into_response()
     }
 }
 
@@ -201,3 +380,22 @@ fn is_unique_violation(err: &DbErr) -> bool {
         _ => false,
     }
 }
+
+macro_rules! impl_from_error {
+    ($($t:ty),+ $(,)?) => {
+        $(
+            impl From<$t> for AppError {
+                fn from(err: $t) -> Self {
+                    Self::Other(anyhow::Error::new(err))
+                }
+            }
+        )+
+    };
+}
+
+impl_from_error!(
+    std::io::Error,
+    base64::DecodeError,
+    std::string::FromUtf8Error,
+    reqwest::Error,
+);
