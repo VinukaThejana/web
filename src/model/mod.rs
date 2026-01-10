@@ -1,6 +1,8 @@
 pub mod aws_object;
 pub mod cdn;
 pub mod contact;
+pub mod llm;
+pub mod metadata;
 pub mod newsletter;
 pub mod post;
 pub mod project;

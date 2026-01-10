@@ -1,4 +1,6 @@
 pub mod html;
+pub mod llm;
+pub mod metadata;
 pub mod parser;
 pub mod verify;
 
@@ -6,8 +8,8 @@ use crate::config::{ENV, state::AppState};
 use crate::pages::status::{ratelimit, servererror};
 use askama::Template;
 use axum::Json;
-use axum::http::StatusCode;
 use axum::http::header;
+use axum::http::{HeaderName, StatusCode};
 use axum::response::{Html, IntoResponse};
 use base64::prelude::*;
 use chrono::{DateTime, FixedOffset, Utc};
@@ -16,6 +18,7 @@ use phf::phf_map;
 use reqwest::Client;
 use serde::{Deserialize, Deserializer};
 use serde_json::json;
+use std::collections::HashMap;
 use std::{fmt::Display, sync::Arc};
 use tokio::signal;
 use tower_governor::governor::GovernorConfig;
@@ -246,4 +249,12 @@ pub fn get_domain() -> String {
         true => domain.trim_end_matches('/').to_string(),
         false => domain.to_string(),
     }
+}
+
+pub fn headers(map: HashMap<HeaderName, &'static str>) -> reqwest::header::HeaderMap {
+    let mut headers = reqwest::header::HeaderMap::new();
+    for (key, value) in map {
+        headers.insert(key, value.parse().unwrap());
+    }
+    headers
 }

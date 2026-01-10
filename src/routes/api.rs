@@ -18,6 +18,6 @@ pub fn routes() -> Router<AppState> {
         )
         .nest(
             "/metadata",
-            Router::new().route("/video", post(metadata::video::get)),
+            Router::new().route("/social", post(metadata::social::get)),
         )
 }
