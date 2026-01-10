@@ -398,4 +398,6 @@ impl_from_error!(
     base64::DecodeError,
     std::string::FromUtf8Error,
     reqwest::Error,
+    reqwest::header::InvalidHeaderValue,
+    reqwest::header::ToStrError,
 );
