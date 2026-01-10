@@ -48,6 +48,7 @@ reqwest = { version = "0.12.15", features = [
   "json",
   "multipart",
   "rustls-tls",
+  "cookies",
 ] }
 ulid = "1.2.1"
 governor = "0.8.1"
@@ -62,3 +63,4 @@ axum-extra = { version = "0.10.1", features = ["typed-header"] }
 regex = "1.12.2"
 urlencoding = "2.1.3"
 url = "2.5.8"
+scraper = "0.25.0"
