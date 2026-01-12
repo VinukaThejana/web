@@ -118,9 +118,15 @@ pub async fn handle_maps(client: &Client, url: &str) -> Result<ScrapedData, AppE
 
     metadata["url"] = url.clone().into();
 
-    if url.contains("google.com/maps") {
+    if url.contains("google.com") {
         let coordinates = |url: &str| -> Option<(f64, f64)> {
             let parsed = Url::parse(url).ok()?;
+            title = parsed
+                .query_pairs()
+                .find(|(key, _)| key == "q")
+                .map(|(_, value)| value.to_string())
+                .and_then(|v| urlencoding::decode(&v).ok().map(|s| s.to_string()));
+
             for segment in parsed.path_segments()? {
                 if let Some(rest) = segment.strip_prefix('@') {
                     let mut parts = rest.split(',');
@@ -191,6 +197,7 @@ pub async fn handle_maps(client: &Client, url: &str) -> Result<ScrapedData, AppE
         metadata["geocoding"] = geocoding.into();
     }
 
+    metadata["name"] = title.clone().into();
     metadata["instructions"] = r#"
     You are generating a factual description of a physical location.
 
@@ -234,7 +241,6 @@ pub async fn handle_ig(client: &Client, url: &str) -> Result<ScrapedData, AppErr
 
     let ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1";
     let mut data = scrape(client, url, Some(ua)).await.unwrap();
-    log::error!("Instagram scraper initial data: {:?}", data);
 
     let mut metadata = serde_json::json!({
         "source": "instagram_scraper",
@@ -263,8 +269,6 @@ pub async fn handle_ig(client: &Client, url: &str) -> Result<ScrapedData, AppErr
             metadata["note"] = "Scraping restricted, inferred from URL".into();
         }
     }
-
-    log::error!("Instagram scraper metadata: {:?}", metadata);
 
     data.metadata = metadata.to_string();
     Ok(data)
@@ -373,7 +377,6 @@ pub async fn handle_fb(client: &Client, url: &str) -> Result<ScrapedData, AppErr
     };
 
     let mut data = scrape(client, &url, Some(ua)).await?;
-    log::error!("Facebook scraper initial data: {:?}", data);
     let mut metadata = serde_json::json!({
         "source": "facebook_scraper",
         "fb_type": content_type,

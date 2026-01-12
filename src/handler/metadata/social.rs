@@ -1,7 +1,7 @@
 use crate::{
     config::ENV,
     error::{AppError, JsonError},
-    model::metadata::GetVideoMetadata,
+    model::metadata::GetSocialMetadata,
     util::{
         llm,
         metadata::{
@@ -20,9 +20,9 @@ use reqwest::redirect::Policy;
 use serde_json::json;
 use validator::Validate;
 
-pub async fn get(
+pub async fn run(
     authorization: Option<TypedHeader<Authorization<Bearer>>>,
-    Json(payload): Json<GetVideoMetadata>,
+    Json(payload): Json<GetSocialMetadata>,
 ) -> Result<impl IntoResponse, JsonError> {
     if !matches!(
         authorization,

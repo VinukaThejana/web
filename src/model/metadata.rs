@@ -9,7 +9,7 @@ pub struct ScrapedData {
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Validate)]
-pub struct GetVideoMetadata {
+pub struct GetSocialMetadata {
     #[validate(url)]
     pub url: String,
 }
