@@ -30,6 +30,7 @@ use ulid::Ulid;
 pub static SOCIALS: phf::Map<&'static str, &'static str> = phf_map! {
     "github" => "https://github.com/VinukaThejana",
     "git" => "https://github.com/VinukaThejana",
+    "substack" => "https://vinuka.substack.com/",
     "linkedin" => "https://www.linkedin.com/in/vinukakodituwakku/",
     "in" => "https://www.linkedin.com/in/vinukakodituwakku/",
     "twitter" => "https://twitter.com/VinukaThejana",

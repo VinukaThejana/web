@@ -31,12 +31,33 @@ pub struct Tmpl {
 impl Default for Tmpl {
     fn default() -> Self {
         let socials: Vec<Social> = vec![
-            Social::new("GitHub", SOCIALS.get("git").unwrap(), "fa-github"),
-            Social::new("LinkedIn", SOCIALS.get("in").unwrap(), "fa-linkedin"),
-            Social::new("X", SOCIALS.get("x").unwrap(), "fa-x-twitter"),
-            Social::new("Threads", SOCIALS.get("threads").unwrap(), "fa-threads"),
-            Social::new("Facebook", SOCIALS.get("fb").unwrap(), "fa-facebook"),
-            Social::new("Instagram", SOCIALS.get("ig").unwrap(), "fa-instagram"),
+            Social::new("GitHub", SOCIALS.get("git").unwrap(), "fa-brands fa-github"),
+            Social::new(
+                "LinkedIn",
+                SOCIALS.get("in").unwrap(),
+                "fa-brands fa-linkedin",
+            ),
+            Social::new("X", SOCIALS.get("x").unwrap(), "fa-brands fa-x-twitter"),
+            Social::new(
+                "Threads",
+                SOCIALS.get("threads").unwrap(),
+                "fa-brands fa-threads",
+            ),
+            Social::new(
+                "Facebook",
+                SOCIALS.get("fb").unwrap(),
+                "fa-brands fa-facebook",
+            ),
+            Social::new(
+                "Instagram",
+                SOCIALS.get("ig").unwrap(),
+                "fa-brands fa-instagram",
+            ),
+            Social::new(
+                "Substack",
+                SOCIALS.get("substack").unwrap(),
+                "bi bi-substack",
+            ),
         ];
 
         Self {

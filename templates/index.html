@@ -27,7 +27,7 @@
     {% for social in socials %}
     <a href="{{ social.url }}" class="hover:text-[#ff79c6] transition" aria-label="{{ social.name }}" target="_blank"
       rel="noreferrer">
-      <i class="fa-brands {{ social.icon }} text-green-400"></i>
+      <i class="{{ social.icon }} text-green-400"></i>
     </a>
     {% endfor %}
   </div>
