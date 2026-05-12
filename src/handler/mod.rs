@@ -5,24 +5,21 @@ pub mod posts;
 pub mod short;
 pub mod upload;
 
-use std::fs;
-
 use axum::{
     Json,
     extract::State,
-    http::{HeaderMap, HeaderValue, StatusCode, header},
+    http::{StatusCode, header},
     response::IntoResponse,
 };
 use chrono::{DateTime, Utc};
-use redis::RedisResult;
 use serde_json::json;
 
 use crate::{
     cache::{self},
     config::{ENV, state::AppState},
-    error::{AppError, HtmlError},
+    error::HtmlError,
     model::post::PartialPostWithSlug,
-    util::{self, Cache, POST_LIMIT},
+    util::{self, POST_LIMIT},
 };
 
 pub async fn health() -> impl IntoResponse {
@@ -36,98 +33,13 @@ pub async fn health() -> impl IntoResponse {
     )
 }
 
-pub async fn favicon() -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("image/x-icon"),
-    );
-    headers.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static("public, max-age=604800"),
-    );
-
-    match fs::read("assets/icons/favicon.ico") {
-        Ok(content) => (StatusCode::OK, headers, content).into_response(),
-        Err(err) => {
-            log::error!("error reading the favicon.ico file: {:?}", err);
-            StatusCode::NOT_FOUND.into_response()
-        }
-    }
-}
-
-pub async fn apple_icon() -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("image/x-icon"),
-    );
-    headers.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static("public, max-age=604800"),
-    );
-
-    match fs::read("assets/icons/apple-icon.png") {
-        Ok(content) => (StatusCode::OK, headers, content).into_response(),
-        Err(err) => {
-            log::error!("error reading the apple-icon.png file: {:?}", err);
-            StatusCode::NOT_FOUND.into_response()
-        }
-    }
-}
-
-pub async fn apple_icon_precompressed() -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("image/x-icon"),
-    );
-    headers.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static("public, max-age=604800"),
-    );
-
-    match fs::read("assets/icons/apple-icon-precomposed.png") {
-        Ok(content) => (StatusCode::OK, headers, content).into_response(),
-        Err(err) => {
-            log::error!(
-                "error reading the apple-icon-precomposed.png file: {:?}",
-                err
-            );
-            StatusCode::NOT_FOUND.into_response()
-        }
-    }
-}
-
-pub async fn webmanifest() -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("application/manifest+json"),
-    );
-    headers.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static("public, max-age=86400"),
-    );
-
-    match fs::read("assets/icons/apple-icon-precomposed.png") {
-        Ok(content) => (StatusCode::OK, headers, content).into_response(),
-        Err(err) => {
-            log::error!(
-                "error reading the apple-icon-precomposed.png file: {:?}",
-                err
-            );
-            StatusCode::NOT_FOUND.into_response()
-        }
-    }
-}
-
 struct UrlEntry {
     location: String,
     last_modified: String,
     change_frequency: String,
     priority: String,
 }
+
 impl UrlEntry {
     fn new(location: &str, last_modified: &str, change_frequency: &str, priority: &str) -> Self {
         let location = if location.starts_with("/") {
@@ -214,44 +126,5 @@ pub async fn site_xml(State(state): State<AppState>) -> Result<impl IntoResponse
         StatusCode::OK,
         [(header::CONTENT_TYPE, "application/xml")],
         xml,
-    ))
-}
-
-pub async fn robots_txt(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
-    let ck = format!("{}:robots.txt", &ENV.redis_schema);
-
-    let payload: Option<String> = redis::cmd("GET")
-        .arg(&ck)
-        .query_async(&mut conn)
-        .await
-        .map_err(|e| AppError::Other(e.into()))?;
-
-    if let Some(content) = payload {
-        Cache::HIT.log(&ck);
-        return Ok((
-            StatusCode::OK,
-            [(header::CONTENT_TYPE, "text/plain")],
-            content,
-        ));
-    }
-    Cache::MISS.log(&ck);
-
-    let content = fs::read_to_string("assets/robots.txt")?;
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
-            .arg(&content)
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("failed to cache robots.txt: {:?}", e);
-        }
-    });
-
-    Ok((
-        StatusCode::OK,
-        [(header::CONTENT_TYPE, "text/plain")],
-        fs::read_to_string("assets/robots.txt")?,
     ))
 }
