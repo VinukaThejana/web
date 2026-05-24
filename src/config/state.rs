@@ -1,9 +1,7 @@
 use super::ENV;
-use envmode::EnvMode;
 use redis::aio::MultiplexedConnection;
 use resend_rs::Resend;
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use std::{sync::Arc, time::Duration};
+use std::{str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::OnceCell;
 
 #[derive(Clone)]
@@ -11,7 +9,7 @@ pub struct AppState {
     rs: Resend,
     rd: redis::Client,
     rd_conn: Arc<OnceCell<MultiplexedConnection>>,
-    db: Arc<OnceCell<DatabaseConnection>>,
+    db: Arc<OnceCell<sqlx::PgPool>>,
     s3: Arc<OnceCell<aws_sdk_s3::Client>>,
 }
 
@@ -54,24 +52,27 @@ impl AppState {
             .clone())
     }
 
-    pub async fn db(&self) -> &DatabaseConnection {
+    pub async fn db(&self) -> &sqlx::PgPool {
         self.db
             .get_or_init(|| async {
-                let mut opt = ConnectOptions::new(&*ENV.db_url);
-                opt.max_lifetime(Duration::from_secs(8))
-                    .idle_timeout(Duration::from_secs(5))
-                    .sqlx_logging(true)
-                    .sqlx_logging_level(if EnvMode::is_prd(&ENV.environment) {
-                        log::LevelFilter::Trace
-                    } else {
-                        log::LevelFilter::Info
-                    })
-                    .set_schema_search_path(&*ENV.db_schema);
+                let mut options = sqlx::postgres::PgConnectOptions::from_str(&*ENV.db_url)
+                    .unwrap_or_else(|e| {
+                        log::error!("failed to parse database url: {:?}", e);
+                        std::process::exit(1);
+                    });
+                options = options.options([("search_path", ENV.db_schema.to_string())]);
 
-                Database::connect(opt).await.unwrap_or_else(|e| {
-                    log::error!("failed to connect to database: {:?}", e);
-                    std::process::exit(1);
-                })
+                sqlx::postgres::PgPoolOptions::new()
+                    .max_connections(1)
+                    .min_connections(1)
+                    .idle_timeout(Duration::from_secs(5))
+                    .max_lifetime(Duration::from_secs(8))
+                    .connect_with(options)
+                    .await
+                    .unwrap_or_else(|e| {
+                        log::error!("failed to connect to database: {:?}", e);
+                        std::process::exit(1);
+                    })
             })
             .await
     }
@@ -101,9 +102,7 @@ impl AppState {
 impl AppState {
     pub async fn close(self) {
         if let Some(db) = Arc::try_unwrap(self.db).ok().and_then(|c| c.into_inner()) {
-            if let Err(err) = db.close().await {
-                log::error!("failed to close database connection: {:?}", err);
-            }
+            db.close().await;
         }
     }
 }

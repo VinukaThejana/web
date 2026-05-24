@@ -43,7 +43,7 @@ pub async fn run(
     let mut conn = state.redis().await?;
     if let Err(e) = database::post::update(
         state.db().await,
-        &entity::post::Model {
+        &crate::model::post::PostModel {
             id: payload.id,
             title: payload.title,
             seo_title: payload.seo_title,

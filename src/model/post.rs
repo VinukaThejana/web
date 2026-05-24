@@ -1,6 +1,6 @@
 use crate::util::verify;
 use chrono::{DateTime, Utc};
-use sea_orm::FromQueryResult;
+use sqlx::FromRow;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -33,13 +33,26 @@ impl Post {
     }
 }
 
-#[derive(FromQueryResult, Debug, Serialize, Deserialize)]
+#[derive(FromRow, Debug, Serialize, Deserialize)]
 pub struct PartialPost {
     pub id: i32,
     pub title: String,
     pub slug: String,
     pub summary: String,
     pub tags: String,
+    pub date: i32,
+}
+
+#[derive(FromRow, Clone, Debug, Serialize, Deserialize)]
+pub struct PostModel {
+    pub id: i32,
+    pub title: String,
+    pub seo_title: String,
+    pub slug: String,
+    pub photo_url: String,
+    pub tags: String,
+    pub summary: String,
+    pub content: String,
     pub date: i32,
 }
 
@@ -177,7 +190,7 @@ pub struct DelPost {
     pub cf_turnstile_response: String,
 }
 
-#[derive(FromQueryResult, Debug, Serialize, Deserialize)]
+#[derive(FromRow, Debug, Serialize, Deserialize)]
 pub struct PartialPostWithSlug {
     pub id: i32,
     pub date: i32,

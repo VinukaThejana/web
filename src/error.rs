@@ -5,7 +5,6 @@ use axum::{
     http::{StatusCode, header},
     response::{Html, IntoResponse, Response},
 };
-use sea_orm::{DbErr, RuntimeErr};
 use serde_json::json;
 use validator::ValidationErrors;
 
@@ -286,12 +285,12 @@ impl AppError {
         }
     }
 
-    pub fn from_database_error(error: DbErr) -> Self {
+    pub fn from_database_error(error: sqlx::Error) -> Self {
         match error {
-            DbErr::RecordNotFound(err) => Self::NotFound {
+            sqlx::Error::RowNotFound => Self::NotFound {
                 user_message: "record not found".to_string(),
                 internal_message: None,
-                source: Some(anyhow::anyhow!(err)),
+                source: Some(anyhow::anyhow!(error)),
             },
             err => {
                 if is_unique_violation(&err) {
@@ -364,21 +363,13 @@ impl IntoResponse for JsonError {
     }
 }
 
-fn is_unique_violation(err: &DbErr) -> bool {
-    match err {
-        DbErr::Query(RuntimeErr::SqlxError(error)) => {
-            if let Some(db_error) = error.as_database_error() {
-                if let Some(code) = db_error.code() {
-                    code == "23505"
-                } else {
-                    false
-                }
-            } else {
-                false
-            }
+fn is_unique_violation(err: &sqlx::Error) -> bool {
+    if let sqlx::Error::Database(db_error) = err {
+        if let Some(code) = db_error.code() {
+            return code == "23505";
         }
-        _ => false,
     }
+    false
 }
 
 macro_rules! impl_from_error {

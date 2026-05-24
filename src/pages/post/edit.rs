@@ -26,7 +26,7 @@ pub struct Tmpl<'a> {
 }
 
 impl<'a> Tmpl<'a> {
-    pub fn new(post: &'a entity::post::Model) -> Self {
+    pub fn new(post: &'a crate::model::post::PostModel) -> Self {
         Self {
             id: post.id,
             date: post.date,

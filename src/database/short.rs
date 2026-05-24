@@ -1,70 +1,60 @@
-use prelude::Expr;
-use sea_orm::{
-    DatabaseConnection, DbErr, EntityTrait, QueryFilter, QueryOrder, QuerySelect, entity::*,
-};
+use crate::model::short::ShortModel;
 
-pub async fn is_key_valid(db: &DatabaseConnection, key: &str) -> Result<bool, DbErr> {
-    let key = entity::short::Entity::find()
-        .filter(entity::short::Column::Key.eq(key))
-        .limit(1)
-        .one(db)
+pub async fn is_key_valid(db: &sqlx::PgPool, key: &str) -> Result<bool, sqlx::Error> {
+    let exists = sqlx::query("SELECT 1 FROM short WHERE key = $1")
+        .bind(key)
+        .fetch_optional(db)
         .await?;
 
-    if key.is_some() { Ok(false) } else { Ok(true) }
+    Ok(exists.is_none())
 }
 
 pub async fn add(
-    db: &DatabaseConnection,
+    db: &sqlx::PgPool,
     url: &str,
     key: &str,
     description: &str,
-) -> Result<(), DbErr> {
-    let short = entity::short::ActiveModel {
-        long_url: Set(url.to_owned()),
-        key: Set(key.to_owned()),
-        description: Set(description.to_owned()),
-        ..Default::default()
-    };
-    short.insert(db).await?;
-
-    Ok(())
-}
-
-pub async fn get(db: &DatabaseConnection, key: &str) -> Result<entity::short::Model, DbErr> {
-    let short = entity::short::Entity::find()
-        .filter(entity::short::Column::Key.eq(key))
-        .one(db)
-        .await?;
-    let short = short.ok_or(DbErr::RecordNotFound(String::from("short not found")))?;
-
-    Ok(short)
-}
-
-pub async fn get_all(db: &DatabaseConnection) -> Result<Vec<entity::short::Model>, DbErr> {
-    entity::short::Entity::find()
-        .order_by_desc(entity::short::Column::CreatedAt)
-        .limit(1000)
-        .all(db)
-        .await
-}
-
-pub async fn increase_views(db: &DatabaseConnection, key: &str) -> Result<(), DbErr> {
-    entity::short::Entity::update_many()
-        .col_expr(
-            entity::short::Column::Views,
-            Expr::col(entity::short::Column::Views).add(1),
-        )
-        .filter(entity::short::Column::Key.eq(key))
-        .exec(db)
+) -> Result<(), sqlx::Error> {
+    sqlx::query("INSERT INTO short (long_url, key, description) VALUES ($1, $2, $3)")
+        .bind(url)
+        .bind(key)
+        .bind(description)
+        .execute(db)
         .await?;
 
     Ok(())
 }
 
-pub async fn delete(db: &DatabaseConnection, key: &str) -> Result<(), DbErr> {
-    entity::short::Entity::delete_many()
-        .filter(entity::short::Column::Key.eq(key))
-        .exec(db)
+pub async fn get(db: &sqlx::PgPool, key: &str) -> Result<ShortModel, sqlx::Error> {
+    sqlx::query_as::<_, ShortModel>(
+        "SELECT id, long_url, key, description, views, created_at FROM short WHERE key = $1"
+    )
+    .bind(key)
+    .fetch_one(db)
+    .await
+}
+
+pub async fn get_all(db: &sqlx::PgPool) -> Result<Vec<ShortModel>, sqlx::Error> {
+    sqlx::query_as::<_, ShortModel>(
+        "SELECT id, long_url, key, description, views, created_at FROM short ORDER BY created_at DESC LIMIT 1000"
+    )
+    .fetch_all(db)
+    .await
+}
+
+pub async fn increase_views(db: &sqlx::PgPool, key: &str) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE short SET views = views + 1 WHERE key = $1")
+        .bind(key)
+        .execute(db)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn delete(db: &sqlx::PgPool, key: &str) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM short WHERE key = $1")
+        .bind(key)
+        .execute(db)
         .await?;
 
     Ok(())

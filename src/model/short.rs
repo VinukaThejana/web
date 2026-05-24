@@ -10,8 +10,18 @@ pub struct Link {
     pub views: u32,
 }
 
-impl From<entity::short::Model> for Link {
-    fn from(value: entity::short::Model) -> Self {
+#[derive(sqlx::FromRow, Clone, Debug, Serialize, Deserialize)]
+pub struct ShortModel {
+    pub id: i32,
+    pub long_url: String,
+    pub key: String,
+    pub description: String,
+    pub views: i32,
+    pub created_at: chrono::NaiveDateTime,
+}
+
+impl From<ShortModel> for Link {
+    fn from(value: ShortModel) -> Self {
         Self {
             long_url: value.long_url,
             key: value.key,
@@ -25,7 +35,7 @@ pub trait ToLinks {
     fn to_links(self) -> Vec<Link>;
 }
 
-impl ToLinks for Vec<entity::short::Model> {
+impl ToLinks for Vec<ShortModel> {
     fn to_links(self) -> Vec<Link> {
         self.into_iter().map(Link::from).collect()
     }
