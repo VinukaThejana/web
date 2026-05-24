@@ -45,7 +45,7 @@ pub async fn run(
         ));
     }
 
-    let Ok(is_valid) = database::short::is_key_valid(&state.db, &payload.key).await else {
+    let Ok(is_valid) = database::short::is_key_valid(state.db().await, &payload.key).await else {
         return html::render(ValidateKey::invalid(
             &payload.key,
             "Failed to check key validity",

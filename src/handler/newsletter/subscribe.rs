@@ -48,7 +48,7 @@ pub async fn run(
 
     let contact = ContactData::new(&payload.email).with_unsubscribed(false);
     if let Err(e) = state
-        .rs
+        .resend()
         .contacts
         .create(&ENV.resend_audience_id, contact)
         .await

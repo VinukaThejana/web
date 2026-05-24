@@ -12,7 +12,7 @@ use axum::{
 pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
     let custom_filename = "Vinuka_Kodituwakku_Resume.pdf";
 
-    let short = database::short::get(&state.db, "resume")
+    let short = database::short::get(state.db().await, "resume")
         .await
         .map_err(AppError::from_database_error)?;
 

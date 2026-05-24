@@ -27,9 +27,14 @@ pub async fn run(
 
     let key = payload.key.trim_matches('/');
 
-    database::short::add(&state.db, &payload.long_url, key, &payload.description)
-        .await
-        .map_err(AppError::from_database_error)?;
+    database::short::add(
+        state.db().await,
+        &payload.long_url,
+        key,
+        &payload.description,
+    )
+    .await
+    .map_err(AppError::from_database_error)?;
 
     Ok(Json(json!({
         "status": "success",

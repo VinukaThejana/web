@@ -400,4 +400,5 @@ impl_from_error!(
     reqwest::Error,
     reqwest::header::InvalidHeaderValue,
     reqwest::header::ToStrError,
+    redis::RedisError,
 );

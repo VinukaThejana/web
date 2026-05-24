@@ -35,7 +35,7 @@ pub async fn run(
         return html::render(Invalid::new(FORM_ID, "password is incorrect"));
     }
 
-    if let Err(e) = database::short::delete(&state.db, &payload.key)
+    if let Err(e) = database::short::delete(state.db().await, &payload.key)
         .await
         .map_err(AppError::from_database_error)
     {

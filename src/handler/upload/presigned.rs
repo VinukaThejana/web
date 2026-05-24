@@ -43,7 +43,8 @@ pub async fn run(
     }
 
     let presigned_url = state
-        .s3
+        .s3()
+        .await
         .put_object()
         .bucket(&*ENV.cloudflare_bucket_name)
         .key(&payload.path)

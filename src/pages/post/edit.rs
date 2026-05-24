@@ -45,7 +45,7 @@ pub async fn render(
     Path(slug): Path<String>,
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let post = database::post::get_by_slug(&state.db, &slug)
+    let post = database::post::get_by_slug(state.db().await, &slug)
         .await
         .map_err(AppError::from_database_error)?;
 

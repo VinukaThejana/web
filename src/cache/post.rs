@@ -51,7 +51,7 @@ pub fn gck_for_last_modified() -> String {
 
 pub async fn gtp(state: AppState, force: bool) -> Result<u64, AppError> {
     let ck = gck_for_total();
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
 
     if !force {
         let result: Option<u64> = redis::cmd("GET")
@@ -67,7 +67,7 @@ pub async fn gtp(state: AppState, force: bool) -> Result<u64, AppError> {
         Cache::MISS.log(&ck);
     }
 
-    let tp = database::post::get_total_posts(&state.db)
+    let tp = database::post::get_total_posts(state.db().await)
         .await
         .map_err(AppError::from_database_error)?;
     tokio::spawn(async move {
@@ -92,7 +92,7 @@ pub async fn gtp(state: AppState, force: bool) -> Result<u64, AppError> {
 
 pub async fn get_slugs(state: AppState, force: bool) -> Result<Vec<PartialPostWithSlug>, AppError> {
     let ck = gck_for_slugs();
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
 
     if !force {
         let result: Option<String> = redis::cmd("GET")
@@ -110,7 +110,7 @@ pub async fn get_slugs(state: AppState, force: bool) -> Result<Vec<PartialPostWi
         Cache::MISS.log(&ck);
     }
 
-    let slugs = database::post::get_slugs(&state.db)
+    let slugs = database::post::get_slugs(state.db().await)
         .await
         .map_err(AppError::from_database_error)?;
     let cache = serde_json::to_string(&slugs).unwrap_or(String::from("[]"));
@@ -137,7 +137,7 @@ pub async fn get_slugs(state: AppState, force: bool) -> Result<Vec<PartialPostWi
 pub async fn update_last_modified(state: AppState, page: u64, date: &str) -> Result<(), AppError> {
     let ck = gck_for_last_modified();
     let date = date.to_owned();
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
 
     let result: Option<String> = redis::cmd("GET")
         .arg(&ck)
@@ -165,7 +165,7 @@ pub async fn update_last_modified(state: AppState, page: u64, date: &str) -> Res
 pub async fn get_last_modified(state: AppState, tp: u64) -> Result<Vec<String>, AppError> {
     let ck = gck_for_last_modified();
     let now = Utc::now().to_rfc3339();
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
 
     let result: Option<String> = redis::cmd("GET")
         .arg(&ck)

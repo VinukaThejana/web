@@ -35,7 +35,8 @@ pub async fn run(
     }
 
     state
-        .s3
+        .s3()
+        .await
         .delete_object()
         .bucket(&*ENV.cloudflare_bucket_name)
         .key(&payload.key)

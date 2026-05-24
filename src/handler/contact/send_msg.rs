@@ -86,7 +86,7 @@ pub async fn run(
         .render()
         .unwrap(),
     );
-    if let Err(e) = state.rs.emails.send(email).await {
+    if let Err(e) = state.resend().emails.send(email).await {
         log::error!("failed to send email : {:?}", e);
         return html::render(Failed::default());
     };

@@ -51,7 +51,8 @@ pub async fn render(
         .unwrap_or_default();
 
     let objects = state
-        .s3
+        .s3()
+        .await
         .list_objects_v2()
         .bucket(&*ENV.cloudflare_bucket_name)
         .start_after(&key)

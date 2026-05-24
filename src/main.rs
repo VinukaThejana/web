@@ -1,6 +1,6 @@
 use axum::{
     Router,
-    http::{Method, header},
+    http::{Method, StatusCode, header},
     routing::get,
 };
 use lambda_http::{Error, run};
@@ -22,6 +22,9 @@ use tower_http::{
 
 #[tokio::main]
 async fn main() -> anyhow::Result<(), Error> {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("failed to install rustls crypto provider");
     log::setup();
 
     let state = AppState::new().await;
@@ -40,7 +43,10 @@ async fn main() -> anyhow::Result<(), Error> {
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
-                .layer(TimeoutLayer::new(Duration::from_secs(10)))
+                .layer(TimeoutLayer::with_status_code(
+                    StatusCode::REQUEST_TIMEOUT,
+                    Duration::from_secs(10),
+                ))
                 .layer(
                     CorsLayer::new()
                         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
@@ -51,7 +57,7 @@ async fn main() -> anyhow::Result<(), Error> {
         .layer(GovernorLayer {
             config: governer_conf,
         })
-        .with_state(state.clone());
+        .with_state(state);
 
     run(app).await
 }

@@ -44,14 +44,8 @@ pub async fn run(
         return html::render(Invalid::new(FORM_ID, "password is incorrect"));
     }
 
-    let conn = state.get_redis_conn().await.map_err(AppError::Other);
-    if let Err(e) = conn {
-        log::error!("failed to get redis connection: {}", e);
-        return html::render(Failed::default());
-    }
-    let mut conn = conn.unwrap();
-
-    if let Err(e) = database::post::add(&state.db, &payload)
+    let mut conn = state.redis().await?;
+    if let Err(e) = database::post::add(state.db().await, &payload)
         .await
         .map_err(AppError::from_database_error)
     {

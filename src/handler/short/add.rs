@@ -36,7 +36,7 @@ pub async fn run(
     }
 
     if let Err(e) = database::short::add(
-        &state.db,
+        state.db().await,
         &payload.long_url,
         &payload.key,
         &payload.description,
