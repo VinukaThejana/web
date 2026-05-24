@@ -9,29 +9,26 @@ use crate::{
     error::{AppError, HtmlError},
     model::post::AddPost,
     util::{
-        POST_LIMIT, cloudflare_verify,
+        POST_LIMIT, ClientIp, cloudflare_verify,
         html::{self},
     },
 };
 use axum::{
     Form,
-    extract::{ConnectInfo, State},
+    extract::State,
     response::IntoResponse,
 };
 use chrono::{DateTime, Utc};
 use redis::RedisResult;
-use std::net::SocketAddr;
 use validator::Validate;
 
 const FORM_ID: &str = "create-post-form";
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<AddPost>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
-
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::new(FORM_ID));
     }

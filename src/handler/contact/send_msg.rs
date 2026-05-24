@@ -1,17 +1,11 @@
-use std::net::SocketAddr;
-
 use crate::{
     config::state::AppState,
     error::{AppError, HtmlError},
     model::contact::ContactUs,
-    util::{AUTHOR_EMAIL, cloudflare_verify, html, srilankan_time},
+    util::{AUTHOR_EMAIL, ClientIp, cloudflare_verify, html, srilankan_time},
 };
 use askama::Template;
-use axum::{
-    Form,
-    extract::{ConnectInfo, State},
-    response::IntoResponse,
-};
+use axum::{Form, extract::State, response::IntoResponse};
 use resend_rs::types::CreateEmailBaseOptions;
 use validator::Validate;
 
@@ -58,11 +52,10 @@ impl<'a> SendEmail<'a> {
 }
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<ContactUs>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::default());
     }

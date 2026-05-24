@@ -1,17 +1,11 @@
-use std::net::SocketAddr;
-
 use crate::{
     config::{ENV, state::AppState},
     error::{AppError, HtmlError},
     model::newsletter::SignUp,
-    util::{cloudflare_verify, html},
+    util::{ClientIp, cloudflare_verify, html},
 };
 use askama::Template;
-use axum::{
-    Form,
-    extract::{ConnectInfo, State},
-    response::IntoResponse,
-};
+use axum::{Form, extract::State, response::IntoResponse};
 use resend_rs::types::ContactData;
 use validator::Validate;
 
@@ -32,11 +26,10 @@ struct Invalid {}
 struct CaptchaFailed {}
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<SignUp>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::default());
     }

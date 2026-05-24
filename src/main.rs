@@ -5,7 +5,7 @@ use axum::{
 };
 use lambda_http::{Error, run};
 use portfolio::{
-    config::{log, state::AppState},
+    config::{ENV, log, state::AppState},
     handler,
     pages::{self},
     routes::{api, components},
@@ -30,7 +30,7 @@ async fn main() -> anyhow::Result<(), Error> {
     let state = AppState::new().await;
     let governer_conf = governer_conf();
 
-    let app = Router::new()
+    let mut app = Router::new()
         .merge(routes::pages::routes())
         .fallback(pages::status::notfound::render)
         .nest(
@@ -59,5 +59,21 @@ async fn main() -> anyhow::Result<(), Error> {
         })
         .with_state(state);
 
-    run(app).await
+    if std::env::var("AWS_LAMBDA_RUNTIME_API").is_ok() {
+        run(app).await
+    } else {
+        app = app.nest_service("/assets", tower_http::services::ServeDir::new("assets"));
+
+        let addr = format!("127.0.0.1:{}", ENV.port);
+        let listener = tokio::net::TcpListener::bind(&addr).await?;
+        ::log::info!("listening on http://{}", addr);
+
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        )
+        .await?;
+
+        Ok(())
+    }
 }

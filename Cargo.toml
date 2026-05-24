@@ -40,7 +40,7 @@ serde_json = "1.0.140"
 thiserror = "2.0.12"
 tokio = { version = "1.44.2", features = ["full"] }
 tower = "0.5.2"
-tower-http = { version = "0.6.2", features = ["trace", "timeout", "cors"] }
+tower-http = { version = "0.6.2", features = ["trace", "timeout", "cors", "fs"] }
 validator = { version = "0.20.0", features = ["derive"] }
 words-count = "0.1.6"
 phf = { version = "0.13.1", features = ["macros"] }

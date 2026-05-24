@@ -4,17 +4,16 @@ use crate::{
     error::{AppError, HtmlError},
     model::post::EditPost,
     util::{
-        cloudflare_verify,
+        ClientIp, cloudflare_verify,
         html::{self},
     },
 };
 use axum::{
     Form,
-    extract::{ConnectInfo, State},
+    extract::State,
     response::IntoResponse,
 };
 use redis::RedisResult;
-use std::net::SocketAddr;
 use validator::Validate;
 
 use super::{CaptchaFailed, Failed, Invalid, Okay};
@@ -22,12 +21,10 @@ use super::{CaptchaFailed, Failed, Invalid, Okay};
 const FORM_ID: &str = "edit-post-form";
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<EditPost>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
-
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::new(FORM_ID));
     }
