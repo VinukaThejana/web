@@ -3,8 +3,8 @@ use std::sync::Arc;
 use crate::error::AppError;
 use crate::util;
 use dotenvy::dotenv;
-use once_cell::sync::Lazy;
 use serde::Deserialize;
+use std::sync::LazyLock;
 use validator::Validate;
 
 #[derive(Debug, Validate, Deserialize)]
@@ -124,4 +124,4 @@ impl Env {
     }
 }
 
-pub static ENV: Lazy<Env> = Lazy::new(Env::new);
+pub static ENV: LazyLock<Env> = LazyLock::new(Env::new);

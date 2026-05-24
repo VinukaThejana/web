@@ -30,11 +30,21 @@ impl Project {
     }
 }
 
+#[derive(sqlx::FromRow, Clone, Debug, Serialize, Deserialize)]
+pub struct ProjectModel {
+    pub id: i32,
+    pub title: String,
+    pub description: String,
+    pub tags: String,
+    pub url: String,
+    pub date: String,
+}
+
 pub trait ToProjects {
     fn to_projects(self) -> Vec<Project>;
 }
 
-impl ToProjects for Vec<entity::project::Model> {
+impl ToProjects for Vec<ProjectModel> {
     fn to_projects(self) -> Vec<Project> {
         self.into_iter()
             .map(|project| {

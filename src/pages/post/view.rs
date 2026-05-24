@@ -51,8 +51,8 @@ impl PostCache {
         serde_json::to_string(self).unwrap_or(NON_EXISTENT_KEY.to_string())
     }
 }
-impl From<entity::post::Model> for PostCache {
-    fn from(value: entity::post::Model) -> Self {
+impl From<crate::model::post::PostModel> for PostCache {
+    fn from(value: crate::model::post::PostModel) -> Self {
         let datetime = DateTime::<Utc>::from_timestamp(value.date.into(), 0).unwrap();
         let date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
 
@@ -76,7 +76,8 @@ pub async fn render(
     let ck = gck_for_slug(&slug);
     let ct = gct_for_slug();
 
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
+
     let content: Option<String> = redis::cmd("GET")
         .arg(&ck)
         .query_async(&mut conn)
@@ -107,7 +108,7 @@ pub async fn render(
 
     Cache::MISS.log(&ck);
 
-    let post = database::post::get_by_slug(&state.db, &slug).await;
+    let post = database::post::get_by_slug(state.db().await, &slug).await;
     if let Err(e) = post {
         tokio::spawn(async move {
             let result: RedisResult<()> = redis::cmd("SET")

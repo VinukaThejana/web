@@ -2,7 +2,7 @@ use crate::{
     cache::post::{gck_for_home, gct_for_home},
     config::state::AppState,
     database,
-    error::{AppError, HtmlError},
+    error::HtmlError,
     model::post::{Post, ToPosts},
     util::{self, Cache, SOCIALS, from_cache, html, to_cache},
 };
@@ -83,12 +83,8 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     let ck = gck_for_home();
     let ct = gct_for_home();
 
-    let conn = state.get_redis_conn().await.map_err(AppError::Other);
-    if let Err(e) = conn {
-        log::error!("failed to get redis connection : {:?}", e);
-        return html::render(Tmpl::default());
-    }
-    let mut conn = conn.unwrap();
+    let mut conn = state.redis().await?;
+
     let payload: Option<String> = redis::cmd("GET")
         .arg(&ck)
         .query_async(&mut conn)
@@ -102,7 +98,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
 
     Cache::MISS.log(&ck);
 
-    let posts = database::post::get(&state.db)
+    let posts = database::post::get(state.db().await)
         .await
         .unwrap_or(vec![])
         .to_posts();

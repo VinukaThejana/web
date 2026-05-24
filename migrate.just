@@ -2,20 +2,18 @@ set dotenv-load
 
 create migration:
   @echo "creating migration"
-  sea-orm-cli migrate generate "{{migration}}"
+  sqlx migrate add "{{migration}}"
 
 up:
   @echo "running migrations"
-  sea-orm-cli migrate -u $(echo $DB_URL) --database-schema $(echo $DB_SCHEMA) up
+  sqlx migrate run --database-url $(echo $DB_URL)
 
 down:
   @echo "rolling back the last applied migration"
-  sea-orm-cli migrate -u $(echo $DB_URL) --database-schema $(echo $DB_SCHEMA) down
+  sqlx migrate revert --database-url $(echo $DB_URL)
 
 reset:
-  @echo "rolling back all migrations"
-  sea-orm-cli migrate -u $(echo $DB_URL) --database-schema $(echo $DB_SCHEMA) reset
-
-generate:
-  @echo "generating entities"
-  sea-orm-cli generate entity -u $(echo $DB_URL) --database-schema $(echo $DB_SCHEMA) --lib --output-dir entity/src
+  @echo "resetting database"
+  sqlx database drop -y --database-url $(echo $DB_URL)
+  sqlx database create --database-url $(echo $DB_URL)
+  sqlx migrate run --database-url $(echo $DB_URL)

@@ -1,10 +1,9 @@
-use sea_orm::{DatabaseConnection, DbErr, EntityTrait, QueryOrder};
+use crate::model::project::ProjectModel;
 
-pub async fn get(db: &DatabaseConnection) -> Result<Vec<entity::project::Model>, DbErr> {
-    let projects = entity::project::Entity::find()
-        .order_by_desc(entity::project::Column::Id)
-        .all(db)
-        .await?;
-
-    Ok(projects)
+pub async fn get(db: &sqlx::PgPool) -> Result<Vec<ProjectModel>, sqlx::Error> {
+    sqlx::query_as::<_, ProjectModel>(
+        "SELECT id, title, description, tags, url, date FROM project ORDER BY id DESC"
+    )
+    .fetch_all(db)
+    .await
 }

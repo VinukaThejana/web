@@ -24,7 +24,7 @@ impl Tmpl {
 }
 
 pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
-    let links = database::short::get_all(&state.db)
+    let links = database::short::get_all(state.db().await)
         .await
         .map_err(AppError::from_database_error)?
         .to_links();

@@ -26,7 +26,7 @@ pub struct Tmpl<'a> {
 }
 
 impl<'a> Tmpl<'a> {
-    pub fn new(post: &'a entity::post::Model) -> Self {
+    pub fn new(post: &'a crate::model::post::PostModel) -> Self {
         Self {
             id: post.id,
             date: post.date,
@@ -45,7 +45,7 @@ pub async fn render(
     Path(slug): Path<String>,
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let post = database::post::get_by_slug(&state.db, &slug)
+    let post = database::post::get_by_slug(state.db().await, &slug)
         .await
         .map_err(AppError::from_database_error)?;
 

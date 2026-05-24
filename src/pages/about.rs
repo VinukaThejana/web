@@ -2,7 +2,7 @@ use crate::{
     cache::project::{gck_projects, gct_projects},
     config::state::AppState,
     database,
-    error::AppError,
+    error::{AppError, HtmlError},
     model::project::{Project, ToProjects},
     util::{Cache, from_cache, to_cache},
 };
@@ -19,17 +19,13 @@ pub struct Tmpl {
     pub projects: Vec<Project>,
 }
 
-pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, HtmlError> {
     let ck = gck_projects();
     let ct = gct_projects();
 
     let mut about = Tmpl::default();
 
-    let conn = state.get_redis_conn().await.map_err(AppError::Other);
-    if conn.is_err() {
-        return Html(about.render().unwrap());
-    }
-    let mut conn = conn.unwrap();
+    let mut conn = state.redis().await?;
 
     let payload: Option<String> = redis::cmd("GET")
         .arg(&ck)
@@ -40,12 +36,12 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
     if let Some(payload) = payload {
         Cache::HIT.log(&ck);
         about.projects = from_cache(&payload);
-        return Html(about.render().unwrap());
+        return Ok(Html(about.render().unwrap()));
     }
 
     Cache::MISS.log(&ck);
 
-    let projects = database::project::get(&state.db)
+    let projects = database::project::get(state.db().await)
         .await
         .unwrap_or(vec![])
         .to_projects();
@@ -68,5 +64,5 @@ pub async fn render(State(state): State<AppState>) -> impl IntoResponse {
     });
 
     about.projects = projects;
-    Html(about.render().unwrap())
+    Ok(Html(about.render().unwrap()))
 }

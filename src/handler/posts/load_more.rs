@@ -31,7 +31,7 @@ pub async fn run(
     let page = payload.validate().map(|_| payload.page).unwrap_or(1);
     let mut load_more = LoadMore::default();
 
-    let mut posts = database::post::get_by_page(&state.db, page, Order::Asc, true)
+    let mut posts = database::post::get_by_page(state.db().await, page, Order::Asc, true)
         .await
         .unwrap_or(vec![])
         .to_posts();

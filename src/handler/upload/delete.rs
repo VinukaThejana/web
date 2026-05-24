@@ -3,25 +3,18 @@ use crate::{
     config::{ENV, state::AppState},
     error::{AppError, HtmlError},
     model::r2::DelResource,
-    util::{cloudflare_verify, html},
+    util::{ClientIp, cloudflare_verify, html},
 };
-use axum::{
-    Form,
-    extract::{ConnectInfo, State},
-    response::IntoResponse,
-};
-use std::net::SocketAddr;
+use axum::{Form, extract::State, response::IntoResponse};
 use validator::Validate;
 
 const FORM_ID: &str = "delete-form";
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<DelResource>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
-
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::new(FORM_ID));
     }
@@ -35,7 +28,8 @@ pub async fn run(
     }
 
     state
-        .s3
+        .s3()
+        .await
         .delete_object()
         .bucket(&*ENV.cloudflare_bucket_name)
         .key(&payload.key)

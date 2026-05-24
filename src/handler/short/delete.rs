@@ -4,25 +4,22 @@ use crate::{
     database,
     error::{AppError, HtmlError},
     model::short::DelShort,
-    util::{cloudflare_verify, html},
+    util::{ClientIp, cloudflare_verify, html},
 };
 use axum::{
     Form,
-    extract::{ConnectInfo, State},
+    extract::State,
     response::IntoResponse,
 };
-use std::net::SocketAddr;
 use validator::Validate;
 
 const FORM_ID: &str = "del-link-form";
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     Form(payload): Form<DelShort>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    let ip = addr.ip().to_string();
-
     if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::new(FORM_ID));
     }
@@ -35,7 +32,7 @@ pub async fn run(
         return html::render(Invalid::new(FORM_ID, "password is incorrect"));
     }
 
-    if let Err(e) = database::short::delete(&state.db, &payload.key)
+    if let Err(e) = database::short::delete(state.db().await, &payload.key)
         .await
         .map_err(AppError::from_database_error)
     {

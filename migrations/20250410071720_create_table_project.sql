@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS project (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    tags VARCHAR(255) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    date VARCHAR(255) NOT NULL
+);

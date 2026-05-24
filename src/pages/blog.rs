@@ -38,7 +38,7 @@ pub async fn paginated(
     let ck = gck_for_page(page);
     let ct = gct_for_page();
 
-    let mut conn = state.get_redis_conn().await.map_err(AppError::Other)?;
+    let mut conn = state.redis().await?;
 
     let payload: Option<String> = redis::cmd("GET")
         .arg(&ck)
@@ -56,7 +56,7 @@ pub async fn paginated(
 
     Cache::MISS.log(&ck);
 
-    let posts = database::post::get_by_page(&state.db, page, Order::Asc, false)
+    let posts = database::post::get_by_page(state.db().await, page, Order::Asc, false)
         .await
         .map_err(AppError::from_database_error)?
         .to_posts();

@@ -26,12 +26,12 @@ pub async fn render(
     }
 
     // INFO: then check the database for the key
-    let short = database::short::get(&state.db, &key)
+    let short = database::short::get(state.db().await, &key)
         .await
         .map_err(AppError::from_database_error)?;
 
     tokio::spawn(async move {
-        database::short::increase_views(&state.db, &key)
+        database::short::increase_views(state.db().await, &key)
             .await
             .map_err(AppError::from_database_error)
             .unwrap_or_else(|e| {

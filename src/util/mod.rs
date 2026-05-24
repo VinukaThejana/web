@@ -259,3 +259,59 @@ pub fn headers(map: HashMap<HeaderName, &'static str>) -> reqwest::header::Heade
     }
     headers
 }
+
+pub struct ClientIp(pub String);
+
+impl<S> axum::extract::FromRequestParts<S> for ClientIp
+where
+    S: Send + Sync,
+{
+    type Rejection = std::convert::Infallible;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        // try Cloudflare connecting IP first
+        if let Some(ip) = parts
+            .headers
+            .get("cf-connecting-ip")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string())
+        {
+            return Ok(ClientIp(ip));
+        }
+
+        // try X-Forwarded-For
+        if let Some(ip) = parts
+            .headers
+            .get("x-forwarded-for")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.split(',').next())
+            .map(|s| s.trim().to_string())
+        {
+            return Ok(ClientIp(ip));
+        }
+
+        // try X-Real-IP
+        if let Some(ip) = parts
+            .headers
+            .get("x-real-ip")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string())
+        {
+            return Ok(ClientIp(ip));
+        }
+
+        // fallback to ConnectInfo
+        if let Some(axum::extract::ConnectInfo(addr)) = parts
+            .extensions
+            .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+        {
+            return Ok(ClientIp(addr.ip().to_string()));
+        }
+
+        // default fallback
+        Ok(ClientIp("127.0.0.1".to_string()))
+    }
+}

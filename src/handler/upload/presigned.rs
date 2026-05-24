@@ -2,12 +2,12 @@ use crate::{
     config::{ENV, state::AppState},
     error::{AppError, JsonError},
     model::r2::{self},
-    util::cloudflare_verify,
+    util::{ClientIp, cloudflare_verify},
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::{
     Json,
-    extract::{ConnectInfo, State},
+    extract::State,
     response::IntoResponse,
 };
 use axum_extra::{
@@ -15,16 +15,15 @@ use axum_extra::{
     headers::{Authorization, authorization::Bearer},
 };
 use serde_json::json;
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
 use validator::Validate;
 
 pub async fn run(
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ClientIp(ip): ClientIp,
     State(state): State<AppState>,
     authorization: Option<TypedHeader<Authorization<Bearer>>>,
     Json(payload): Json<r2::Payload>,
 ) -> Result<impl IntoResponse, JsonError> {
-    let ip = addr.ip().to_string();
 
     let mut is_authorized = false;
     if let Some(TypedHeader(auth)) = authorization
@@ -43,7 +42,8 @@ pub async fn run(
     }
 
     let presigned_url = state
-        .s3
+        .s3()
+        .await
         .put_object()
         .bucket(&*ENV.cloudflare_bucket_name)
         .key(&payload.path)
