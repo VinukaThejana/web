@@ -5,5 +5,5 @@ mod redis
 mod migrate
 
 tailwind:
-  bunx @tailwindcss/cli -i ./assets/css/global.css -o ./assets/css/styles.css --watch
+  bunx @tailwindcss/cli -i ./public/assets/css/global.css -o ./public/assets/css/styles.css --watch
   

@@ -57,12 +57,22 @@ async fn main() -> anyhow::Result<(), Error> {
         .layer(GovernorLayer {
             config: governer_conf,
         })
-        .with_state(state);
+        .with_state(state.clone());
 
     if std::env::var("AWS_LAMBDA_RUNTIME_API").is_ok() {
         run(app).await
     } else {
-        app = app.nest_service("/assets", tower_http::services::ServeDir::new("assets"));
+        use axum::handler::Handler;
+
+        let serve_dir = tower_http::services::ServeDir::new("public")
+            .not_found_service(pages::status::notfound::render.with_state(state.clone()));
+
+        app = app
+            .nest_service(
+                "/assets",
+                tower_http::services::ServeDir::new("public/assets"),
+            )
+            .fallback_service(serve_dir);
 
         let addr = format!("127.0.0.1:{}", ENV.port);
         let listener = tokio::net::TcpListener::bind(&addr).await?;
