@@ -155,6 +155,11 @@ pub fn srilankan_time() -> DateTime<FixedOffset> {
     Utc::now().with_timezone(&sri_lanka_offset)
 }
 
+pub fn get_year() -> i32 {
+    use chrono::Datelike;
+    srilankan_time().year()
+}
+
 pub fn escape_xml(input: &str) -> String {
     input
         .replace('&', "&amp;")

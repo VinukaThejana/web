@@ -48,7 +48,7 @@
       <a href="#" class="hover:text-green-400 transition mx-2"></a>
     </div>
     <div>
-      © 2025 <a href="/" class="hover:text-green-400 transition">{{ crate::util::AUTHOR }}</a>. All rights reserved.
+      © {{ crate::util::get_year() }} <a href="/" class="hover:text-green-400 transition">{{ crate::util::AUTHOR }}</a>. All rights reserved.
     </div>
   </footer>
   {% block scripts %}{% endblock %}
