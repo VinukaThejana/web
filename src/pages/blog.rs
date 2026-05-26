@@ -61,21 +61,19 @@ pub async fn paginated(
         .map_err(AppError::from_database_error)?
         .to_posts();
     let payload = to_cache(&posts);
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
-            .arg(payload)
-            .arg("EX")
-            .arg(ct)
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-            return;
-        }
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(&ck)
+        .arg(payload)
+        .arg("EX")
+        .arg(ct)
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     if posts.is_empty() {
         return Err(AppError::not_found(format!("No posts found for page {}", page)).into());

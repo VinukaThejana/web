@@ -110,20 +110,19 @@ pub async fn render(
 
     let post = database::post::get_by_slug(state.db().await, &slug).await;
     if let Err(e) = post {
-        tokio::spawn(async move {
-            let result: RedisResult<()> = redis::cmd("SET")
-                .arg(&ck)
-                .arg(NON_EXISTENT_KEY)
-                .arg("EX")
-                .arg(ct)
-                .query_async(&mut conn)
-                .await;
-            if let Err(e) = result {
-                log::error!("{:?}", e);
-                Cache::FAILED.log(&ck);
-            }
+        let result: RedisResult<()> = redis::cmd("SET")
+            .arg(&ck)
+            .arg(NON_EXISTENT_KEY)
+            .arg("EX")
+            .arg(ct)
+            .query_async(&mut conn)
+            .await;
+        if let Err(e) = result {
+            log::error!("{:?}", e);
+            Cache::FAILED.log(&ck);
+        } else {
             Cache::SET.log(&ck);
-        });
+        }
 
         return Err(AppError::not_found_with_source(
             "could not find the url for the given slug",
@@ -137,20 +136,19 @@ pub async fn render(
     let post: PostCache = post.into();
 
     let cache = post.to_cache();
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
-            .arg(&cache)
-            .arg("EX")
-            .arg(ct)
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-        }
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(&ck)
+        .arg(&cache)
+        .arg("EX")
+        .arg(ct)
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     let post = Tmpl {
         title: &post.title,

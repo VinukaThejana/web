@@ -105,21 +105,19 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
     println!("posts: {:?}", posts);
 
     let payload = to_cache(&posts);
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
-            .arg(payload)
-            .arg("EX")
-            .arg(ct)
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-            return;
-        }
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(&ck)
+        .arg(payload)
+        .arg("EX")
+        .arg(ct)
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     html::render(Tmpl::new(posts).await)
 }

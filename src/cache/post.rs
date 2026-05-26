@@ -70,22 +70,20 @@ pub async fn gtp(state: AppState, force: bool) -> Result<u64, AppError> {
     let tp = database::post::get_total_posts(state.db().await)
         .await
         .map_err(AppError::from_database_error)?;
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_total())
-            .arg(tp)
-            .arg("EX")
-            .arg(gct_for_total())
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-            return;
-        }
 
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(gck_for_total())
+        .arg(tp)
+        .arg("EX")
+        .arg(gct_for_total())
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     Ok(tp)
 }
@@ -114,22 +112,20 @@ pub async fn get_slugs(state: AppState, force: bool) -> Result<Vec<PartialPostWi
         .await
         .map_err(AppError::from_database_error)?;
     let cache = serde_json::to_string(&slugs).unwrap_or(String::from("[]"));
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(gck_for_slugs())
-            .arg(cache)
-            .arg("EX")
-            .arg(gct_for_total())
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-            return;
-        }
 
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(gck_for_slugs())
+        .arg(cache)
+        .arg("EX")
+        .arg(gct_for_total())
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     Ok(slugs)
 }
@@ -180,19 +176,17 @@ pub async fn get_last_modified(state: AppState, tp: u64) -> Result<Vec<String>, 
     }
 
     let cache = serde_json::to_string(&last_modified).unwrap_or(String::from("[]"));
-    tokio::spawn(async move {
-        let result: RedisResult<()> = redis::cmd("SET")
-            .arg(&ck)
-            .arg(cache)
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("{:?}", e);
-            Cache::FAILED.log(&ck);
-            return;
-        }
+    let result: RedisResult<()> = redis::cmd("SET")
+        .arg(&ck)
+        .arg(cache)
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("{:?}", e);
+        Cache::FAILED.log(&ck);
+    } else {
         Cache::SET.log(&ck);
-    });
+    }
 
     Ok(last_modified)
 }

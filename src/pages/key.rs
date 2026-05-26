@@ -30,14 +30,12 @@ pub async fn render(
         .await
         .map_err(AppError::from_database_error)?;
 
-    tokio::spawn(async move {
-        database::short::increase_views(state.db().await, &key)
-            .await
-            .map_err(AppError::from_database_error)
-            .unwrap_or_else(|e| {
-                log::error!("failed to increase views for key({key}) : {}", e);
-            });
-    });
+    database::short::increase_views(state.db().await, &key)
+        .await
+        .map_err(AppError::from_database_error)
+        .unwrap_or_else(|e| {
+            log::error!("failed to increase views for key({key}) : {}", e);
+        });
 
     Ok(Redirect::permanent(&short.long_url))
 }

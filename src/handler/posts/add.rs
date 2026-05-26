@@ -61,16 +61,14 @@ pub async fn run(
     let tp = cache::post::gtp(state.clone(), true).await;
     if let Err(e) = tp {
         log::error!("failed to get total posts: {}", e);
-        tokio::spawn(async move {
-            let result: RedisResult<()> = redis::pipe()
-                .flushdb()
-                .ignore()
-                .query_async(&mut conn)
-                .await;
-            if let Err(e) = result {
-                log::error!("failed to flush redis: {}", e);
-            }
-        });
+        let result: RedisResult<()> = redis::pipe()
+            .flushdb()
+            .ignore()
+            .query_async(&mut conn)
+            .await;
+        if let Err(e) = result {
+            log::error!("failed to flush redis: {}", e);
+        }
 
         return html::render(Okay::new(
             "Added",
@@ -80,38 +78,36 @@ pub async fn run(
     let tp = tp.unwrap();
     let tp = (tp as f64 / POST_LIMIT as f64).ceil() as u64;
 
-    tokio::spawn(async move {
-        if let Err(e) = cache::post::update_last_modified(
-            state.clone(),
-            tp,
-            &DateTime::<Utc>::from_timestamp(payload.date.try_into().unwrap(), 0)
-                .unwrap()
-                .to_rfc3339(),
-        )
-        .await
-        {
-            log::error!("failed to update last modified: {}", e);
-        }
+    if let Err(e) = cache::post::update_last_modified(
+        state.clone(),
+        tp,
+        &DateTime::<Utc>::from_timestamp(payload.date.try_into().unwrap(), 0)
+            .unwrap()
+            .to_rfc3339(),
+    )
+    .await
+    {
+        log::error!("failed to update last modified: {}", e);
+    }
 
-        let result: RedisResult<()> = redis::pipe()
-            .cmd("DEL")
-            .arg(gck_for_home())
-            .ignore()
-            .cmd("DEL")
-            .arg(gck_for_slug(&payload.slug))
-            .ignore()
-            .cmd("DEL")
-            .arg(gck_for_page(tp))
-            .ignore()
-            .cmd("DEL")
-            .arg(gck_for_slugs())
-            .ignore()
-            .query_async(&mut conn)
-            .await;
-        if let Err(e) = result {
-            log::error!("failed to delete redis cache: {}", e);
-        }
-    });
+    let result: RedisResult<()> = redis::pipe()
+        .cmd("DEL")
+        .arg(gck_for_home())
+        .ignore()
+        .cmd("DEL")
+        .arg(gck_for_slug(&payload.slug))
+        .ignore()
+        .cmd("DEL")
+        .arg(gck_for_page(tp))
+        .ignore()
+        .cmd("DEL")
+        .arg(gck_for_slugs())
+        .ignore()
+        .query_async(&mut conn)
+        .await;
+    if let Err(e) = result {
+        log::error!("failed to delete redis cache: {}", e);
+    }
 
     html::render(Okay::new(
         "Added",
