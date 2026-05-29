@@ -72,3 +72,5 @@ scraper = "0.27.0"
 lambda_http = "1.1.3"
 rustls = { version = "0.23.40", default-features = false, features = ["ring"] }
 openssl = { version = "0.10", features = ["vendored"] }
+hmac = "0.13.0"
+sha2 = "0.11.0"

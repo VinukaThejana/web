@@ -14,10 +14,12 @@ use axum::response::{Html, IntoResponse};
 use base64::prelude::*;
 use chrono::{DateTime, FixedOffset, Utc};
 use governor::middleware::NoOpMiddleware;
+use hmac::{Hmac, KeyInit, Mac};
 use phf::phf_map;
 use reqwest::Client;
 use serde::{Deserialize, Deserializer};
 use serde_json::json;
+use sha2::Sha256;
 use std::collections::HashMap;
 use std::{fmt::Display, sync::Arc};
 use tokio::signal;
@@ -265,6 +267,21 @@ pub fn headers(map: HashMap<HeaderName, &'static str>) -> reqwest::header::Heade
     headers
 }
 
+type HmacSha256 = Hmac<Sha256>;
+
+fn verify_ip_signature(ip: &str, signature: &str, secret: &str) -> bool {
+    let Ok(mut mac) = HmacSha256::new_from_slice(secret.as_bytes()) else {
+        return false;
+    };
+    mac.update(ip.as_bytes());
+
+    let Ok(signed_bytes) = hex::decode(signature) else {
+        return false;
+    };
+
+    mac.verify_slice(&signed_bytes).is_ok()
+}
+
 pub struct ClientIp(pub String);
 
 impl<S> axum::extract::FromRequestParts<S> for ClientIp
@@ -277,7 +294,27 @@ where
         parts: &mut axum::http::request::Parts,
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
-        // try Cloudflare connecting IP first
+        // try the signed header pair first
+        let signed_ip = parts
+            .headers
+            .get("x-client-ip")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string());
+
+        let signature = parts
+            .headers
+            .get("x-client-ip-signature")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string());
+
+        if let (Some(ip), Some(sig)) = (signed_ip, signature) {
+            if verify_ip_signature(&ip, &sig, &ENV.turnstile_site_secret) {
+                return Ok(ClientIp(ip));
+            }
+            log::warn!("invalid IP signature for ip: {}", ip);
+        }
+
+        // fallback chain for local dev / non-proxied requests
         if let Some(ip) = parts
             .headers
             .get("cf-connecting-ip")
@@ -287,7 +324,6 @@ where
             return Ok(ClientIp(ip));
         }
 
-        // try X-Forwarded-For
         if let Some(ip) = parts
             .headers
             .get("x-forwarded-for")
@@ -298,17 +334,6 @@ where
             return Ok(ClientIp(ip));
         }
 
-        // try X-Real-IP
-        if let Some(ip) = parts
-            .headers
-            .get("x-real-ip")
-            .and_then(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-        {
-            return Ok(ClientIp(ip));
-        }
-
-        // fallback to ConnectInfo
         if let Some(axum::extract::ConnectInfo(addr)) = parts
             .extensions
             .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
