@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+
 <!-- About Header -->
 <header class="py-12 text-center">
   <div class="mb-8 flex justify-center">
@@ -22,174 +23,187 @@
   </p>
 </header>
 
-<!-- About Content -->
 <main class="py-8">
 
-  <!-- Bio Section -->
-  <section id="about-me" class="mb-16">
-    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]"><span class="text-green-400">About</span> Me</h2>
-    <div class="space-y-4 text-gray-300">
-      <p>
-  Hey there! I’m Vinuka, a CS undergrad who geeks out over backend systems and clean code. I’m happiest in a Linux terminal, tinkering with Neovim and tmux to make my workflow slick. Right now, I’m neck-deep in my final-year project: building an adaptive bitrate streaming client that can transcode video on the fly so everyone gets a smooth stream, no matter their connection.
-      </p>
-      <p>
-  I love thinking through tricky problems and coming up with clever ways to solve them, whether that’s figuring out how to scale a system, designing an API that just feels right, or writing a tiny script that saves me a bunch of clicks. I’ve built things like real-time driver trackers and secure auth servers, and I tend to rant (I mean write) about the things I learn along the way. I’m big on backend dev, obsessed with Rust, and always down for a good dive into performance tuning or distributed systems.
-      </p>
-      <p>
-  Outside of code, I drive stick and will happily argue that manuals are more fun, more connected, and more human. If your left foot isn’t doing anything, are you driving? I love the rhythm of rev matching, the smoothness of engine braking, and the satisfaction of hitting the perfect shift point. It's all part of the experience. There's a sense of control and honesty in driving a manual that just doesn't exist with anything else.
-      </p>
-      <p>
-  If you’re into Linux magic, Rust adventures, Cars or just enjoy talking about systems and side projects, let’s connect!
-      </p>
-    </div>
-  </section>
+<!-- Bio Section -->
+<section id="about-me" class="mb-16">
+  <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]"><span class="text-green-400">About</span> Me</h2>
+  <div class="space-y-4 text-gray-300">
+    <p>
+      I'm Vinuka. I build backend systems, and I write about the things I figure out along the way.
+    </p>
 
-  <section id="final-year-project" class="mb-16 p-6 bg-gray-800 rounded-lg border border-green-400/30">
-    <div class="flex items-center mb-6">
-      <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-        <i class="fa-solid fa-lightbulb text-green-400 text-xl"></i>
+    <p>
+      I like sitting with a problem until I actually understand it. A lot of what I build comes from that curiosity more than anything else. The 3D slicer I'm working on in Rust started because I wanted to understand how volume computation actually works on a mesh, not because anyone asked for it. That's just the kind of thing I find interesting.
+    </p>
+
+    <p>
+      I also co-founded 
+      <a href="https://kernel70.com" target="_blank" class="text-green-400 hover:underline">Kernel70</a> 
+      with a few friends while studying, and through that I've shipped production software for real clients, from real-time tracking platforms running in the UK to backend systems for organizations here in Sri Lanka.
+    </p>
+
+    <p>
+      Outside of programming, I drive a manual. I genuinely enjoy it. The rev matching, the engine braking, being aware of exactly what the car is doing. There's something about not letting the machine do everything for you that I find satisfying. I feel the same way about working closer to the systems layer, honestly.
+    </p>
+
+    <p>
+      If you're into backend work or just like how systems fit together, there's probably something here for you.
+    </p>
+  </div>
+</section>
+
+
+<!-- Final year research project section -->
+<section id="final-year-project" class="mb-16 p-6 bg-gray-800 rounded-lg border border-green-400/30">
+  <div class="flex items-center mb-6">
+    <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+      <i class="fa-solid fa-lightbulb text-green-400 text-xl"></i>
+    </div>
+    <h2 class="text-2xl font-bold"><span class="text-green-400">What</span> I'm Building</h2>
+  </div>
+
+  <div class="space-y-4 text-gray-300">
+    <h3 class="text-xl font-bold text-white">Real-Time Adaptive Bitrate (ABR) Transcoding Engine</h3>
+    <p>
+      My final year project is a real-time adaptive bitrate streaming engine written in Rust. The idea is simple: ingest a high frame rate source and transcode it on the fly into multiple bitrate formats so the client always gets the best stream their connection can handle.
+    </p>
+
+    <p>
+      The interesting problems are in the transcoding pipeline. Keeping up with a live source in real time, managing memory without falling behind, and making the bitrate switching decisions fast enough that the viewer never notices. That's what I'm currently working through.
+    </p>
+
+    <p>
+      It's a sports broadcasting use case at heart, where dropped frames and buffering actually matter.
+    </p>
+
+    <p>
+      If you've worked with FFmpeg from Rust before, I'd genuinely love to hear how you approached it.
+    </p>
+  </div>
+</section>
+
+<!-- Skills Section -->
+<section class="mb-16">
+  <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]">
+    <span class="text-green-400">Technical</span> Skills
+  </h2>
+
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Systems & Architecture</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-microchip text-green-400 text-xl"></i>
+          </div>
+          <h4 class="font-bold">Systems Programming</h4>
+        </div>
+        <p class="text-sm text-gray-300">
+          I write performance-critical code in Rust and Go. That means thinking about allocations, understanding what the compiler is actually doing, and not reaching for an abstraction when the problem is fundamentally a low-level one.
+        </p>
       </div>
-      <h2 class="text-2xl font-bold"><span class="text-green-400">Project</span> Concept</h2>
-    </div>
 
-    <div class="space-y-4 text-gray-300">
-      <h3 class="text-xl font-bold text-white">Real-Time Adaptive Bitrate (ABR) Transcoding Engine</h3>
-      <p>
-        I am currently architecting a research project focused on high-performance live streaming for sports broadcasting. The goal is to design a system in <strong>Rust</strong> capable of ingesting 4K high-frame-rate sources and transcoding them in real-time into various ABR formats.
-      </p>
-      
-      <div class="bg-gray-900/50 p-4 rounded border-l-4 border-green-400 my-4">
-        <p class="text-sm italic">
-        <strong>Seeking Guidance:</strong> I am in the early design phase and looking for resources or mentors with experience in <strong>video infrastructure</strong> and <strong>memory-efficient systems</strong> in Rust. If you've worked on these types of architectural puzzles, I'd love to connect.
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-network-wired text-green-400 text-xl"></i>
+          </div>
+          <h4 class="font-bold">Distributed Messaging</h4>
+        </div>
+        <p class="text-sm text-gray-300">
+          I've built services that talk over gRPC, Kafka, and Redis Pub/Sub. A lot of that work in Go comes down to getting the concurrency right: channels and mutexes, making sure shared state stays consistent.
+        </p>
+      </div>
+
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-shield-halved text-green-400 text-xl"></i>
+          </div>
+          <h4 class="font-bold">Security & Identity</h4>
+        </div>
+        <p class="text-sm text-gray-300">
+          I've built IAM systems from scratch. OAuth2, WebAuthn, TOTP-based MFA, JWT rotation with Redis-backed session invalidation. I've read enough about how these go wrong to take it seriously.
+        </p>
+      </div>
+
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-terminal text-green-400 text-xl"></i>
+          </div>
+          <h4 class="font-bold">Unix Environment & Tooling</h4>
+        </div>
+        <p class="text-sm text-gray-300">
+          I live in the terminal. Neovim, tmux, a tiling WM, and a <a href="https://github.com/VinukaThejana/dotfiles" target="_blank" class="text-green-400 hover:underline">dotfiles repo</a> that keeps everything reproducible across machines. If I'm doing something more than twice it gets a script.
         </p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Skills Section -->
-  <section class="mb-16">
-    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]">
-      <span class="text-green-400">Technical</span> Skills
-    </h2>
+  <!-- Infra -->
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Data & Infrastructure</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
 
-    <div class="mb-8">
-      <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Systems & Architecture</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-microchip text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Systems Programming</h4>
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-database text-green-400 text-xl"></i>
           </div>
-          <p class="text-sm text-gray-300">
-            Building high-performance logic in Rust and Go. Focused on memory efficiency, low-level optimizations, and creating stable CLI toolkits for complex data processing.
-          </p>
+          <h4 class="font-bold">Database Engineering</h4>
         </div>
+        <p class="text-sm text-gray-300">
+          I work with PostgreSQL and MySQL. Most of the interesting work is in the schema design and access patterns, getting those right early saves a lot of pain later. I use Redis on top for caching and session management to keep the database load reasonable.
+        </p>
+      </div>
 
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-network-wired text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Distributed Messaging</h4>
+      <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a] h-full">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
+            <i class="fa-solid fa-cloud text-green-400 text-xl"></i>
           </div>
-          <p class="text-sm text-gray-300">
-            Designing decoupled services using gRPC (Tonic), Kafka, and Redis Pub/Sub. Leveraging Go concurrency primitives like channels and mutexes for thread-safe state management.
-          </p>
+          <h4 class="font-bold">Cloud-Native Tooling</h4>
         </div>
-
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-shield-halved text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Security & Identity</h4>
-          </div>
-          <p class="text-sm text-gray-300">
-            Implementing IAM systems with OAuth2 and WebAuthn. Managing secure session lifecycles using JWT rotation, TOTP-based MFA, and secure cookie patterns.
-          </p>
-        </div>
-
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-terminal text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Unix Environment & Tooling</h4>
-          </div>
-          <p class="text-sm text-gray-300">
-            Operating with a shell-first mindset. I maintain a 
-            <a href="https://github.com/VinukaThejana/dotfiles" target="_blank" class="text-green-400 hover:underline">reproducible dotfiles setup</a> 
-            to ensure environment parity and workflow automation across my entire engineering stack.
-          </p>
-        </div>
-
+        <p class="text-sm text-gray-300">
+          I deploy on AWS mostly, ECS, Lambda, S3, and some GCP. Docker for containerization, Terraform for infrastructure, and GitHub Actions for CI/CD. Nothing exotic, just making sure things actually ship and stay running.
+        </p>
       </div>
     </div>
+  </div>
 
-    <div class="mb-8">
-      <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Data & Infrastructure</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-database text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Database Engineering</h4>
-          </div>
-          <p class="text-sm text-gray-300">
-            Designing schemas and optimizing access patterns for PostgreSQL and MySQL. Using Redis for session management and strategic caching to reduce database contention.
-          </p>
+  <div>
+    <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Primary Tech Stack</h3>
+    <div class="flex flex-wrap gap-3">
+      <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
+        <i class="fa-brands fa-golang text-green-400 mr-2"></i>
+        <span>Go (Fiber, CHI)</span>
         </div>
-
-        <div class="p-4 bg-gray-800 rounded-lg border border-[#44475a]">
-          <div class="flex items-center mb-2">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#44475a] rounded-lg mr-3">
-              <i class="fa-solid fa-cloud text-green-400 text-xl"></i>
-            </div>
-            <h4 class="font-bold">Cloud-Native Tooling</h4>
-          </div>
-          <p class="text-sm text-gray-300">
-            Deploying containerized workloads on AWS (ECS, Lambda, S3) and GCP. Automating the software lifecycle through Docker and GitHub Actions CI/CD pipelines.
-          </p>
+      <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
+        <i class="fa-brands fa-rust text-green-400 mr-2"></i>
+        <span>Rust (Axum, Tonic)</span>
+      </div>
+      <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
+        <i class="fa-brands fa-js text-green-400 mr-2"></i>
+        <span>TypeScript (Express)</span>
         </div>
-
+      <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
+        <i class="fa-brands fa-java text-green-400 mr-2"></i>
+        <span>Java</span>
+      </div>
+      <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
+        <i class="fa-brands fa-php text-green-400 mr-2"></i>
+        <span>PHP</span>
       </div>
     </div>
-
-    <div>
-      <h3 class="text-xl font-semibold mb-4 text-[#ff79c6]">Primary Tech Stack</h3>
-      <div class="flex flex-wrap gap-3">
-        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
-          <i class="fa-brands fa-golang text-green-400 mr-2"></i>
-          <span>Go (Fiber, CHI)</span>
-        </div>
-        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
-          <i class="fa-brands fa-rust text-green-400 mr-2"></i>
-          <span>Rust (Axum, Tonic)</span>
-        </div>
-        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
-          <i class="fa-brands fa-js text-green-400 mr-2"></i>
-          <span>TypeScript (Express)</span>
-        </div>
-        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
-          <i class="fa-brands fa-java text-green-400 mr-2"></i>
-          <span>Java</span>
-        </div>
-        <div class="px-4 py-2 bg-gray-800 rounded-lg flex items-center border border-[#44475a]">
-          <i class="fa-brands fa-php text-green-400 mr-2"></i>
-          <span>PHP</span>
-        </div>
-      </div>
-    </div>
+  </div>
 </section>
 
   <!-- Key Projects Section -->
-  <section id="project-showcase" class="mb-16">
-    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]"><span class="text-green-400">Key</span> Projects</h2>
+<section id="project-showcase" class="mb-16">
+  <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]"><span class="text-green-400">Key</span> Projects</h2>
 
     <div class="space-y-6">
       {% for project in projects %}
@@ -198,7 +212,30 @@
     </div>
   </section>
 
-  <!-- Experience Timeline -->
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6 pb-2 border-b border-[#44475a]">
+      <span class="text-green-400">Experience</span>
+    </h2>
+    <div>
+      {% for experience in experiences %}
+      <div class="{% if loop.last %}{% else %}mb-10{% endif %}">
+        <div class="mb-1 flex flex-col sm:flex-row sm:items-center">
+          <h3 class="text-xl font-bold">{{ experience.title }}</h3>
+          <span class="sm:ml-auto text-sm text-[#ff79c6]">{{ experience.date }}</span>
+        </div>
+        <p class="text-sm text-gray-300 mb-2">{{ experience.company }}</p>
+        <p class="text-gray-300">
+          {{ experience.description | safe }}
+        </p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          {% for tag in experience.tags %}
+          <span class="px-2 py-1 bg-[#44475a] rounded text-xs text-gray-300">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 
   <!-- Education Section -->
   <section class="mb-16">
