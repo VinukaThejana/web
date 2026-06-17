@@ -123,7 +123,7 @@ impl AppError {
     where
         E: StdErrorExt,
     {
-        Self::NotFound {
+        Self::Unauthorized {
             user_message: msg.into(),
             internal_message,
             source: Some(anyhow::Error::new(source)),
@@ -192,6 +192,7 @@ impl AppError {
             | AppError::UniqueViolation { source, .. }
             | AppError::Unauthorized { source, .. }
             | AppError::CaptchaFailed { source, .. } => source.as_ref(),
+            AppError::Other(e) => Some(e),
             _ => None,
         }
     }
@@ -199,6 +200,7 @@ impl AppError {
     fn internal_message(&self) -> Option<String> {
         match self {
             AppError::Other(e) => Some(format!("{:#}", e)),
+            AppError::Validation(errs) => Some(format!("{:?}", errs)),
             AppError::BadRequest {
                 internal_message, ..
             }
@@ -214,7 +216,6 @@ impl AppError {
             | AppError::CaptchaFailed {
                 internal_message, ..
             } => internal_message.clone(),
-            _ => None,
         }
     }
 
@@ -264,7 +265,7 @@ impl AppError {
         let tag = self.get_tag();
         let msg = self
             .internal_message()
-            .unwrap_or_else(|| String::from("something went wrong"));
+            .unwrap_or_else(|| self.get_user_message());
         let source = self.source_error();
 
         match self {
@@ -313,8 +314,21 @@ impl<E> From<E> for HtmlError
 where
     E: Into<AppError>,
 {
-    fn from(err: E) -> Self {
-        HtmlError(err.into())
+    fn from(e: E) -> Self {
+        HtmlError(e.into())
+    }
+}
+
+impl IntoResponse for HtmlError {
+    fn into_response(self) -> Response {
+        let html = match self.0 {
+            AppError::NotFound { .. } => notfound::Tmpl::default().render().unwrap(),
+            _ => servererror::Tmpl::default().render().unwrap(),
+        };
+
+        self.0.log();
+
+        (self.0.get_status_code(), Html(html)).into_response()
     }
 }
 
@@ -324,26 +338,8 @@ impl<E> From<E> for JsonError
 where
     E: Into<AppError>,
 {
-    fn from(err: E) -> Self {
-        JsonError(err.into())
-    }
-}
-
-impl IntoResponse for HtmlError {
-    fn into_response(self) -> Response {
-        let html = match self.0 {
-            AppError::NotFound { .. } => notfound::Tmpl::default().render().unwrap(),
-            AppError::BadRequest { .. } => unimplemented!(),
-            AppError::UniqueViolation { .. } => unimplemented!(),
-            AppError::Unauthorized { .. } => unimplemented!(),
-            AppError::CaptchaFailed { .. } => unimplemented!(),
-            AppError::Validation(_) => unimplemented!(),
-            AppError::Other(_) => servererror::Tmpl::default().render().unwrap(),
-        };
-
-        self.0.log();
-
-        (self.0.get_status_code(), Html(html)).into_response()
+    fn from(e: E) -> Self {
+        JsonError(e.into())
     }
 }
 
@@ -364,9 +360,9 @@ impl IntoResponse for JsonError {
 }
 
 fn is_unique_violation(err: &sqlx::Error) -> bool {
-    if let sqlx::Error::Database(db_error) = err {
-        if let Some(code) = db_error.code() {
-            return code == "23505";
+    if let sqlx::Error::Database(db_err) = err {
+        if let Some(code) = db_err.code() {
+            return code == "23505"; // PostgreSQL unique violation error code
         }
     }
     false
@@ -393,3 +389,54 @@ impl_from_error!(
     reqwest::header::ToStrError,
     redis::RedisError,
 );
+
+pub trait AppErrorOptionExt<T> {
+    fn not_found_msg(self, msg: &str) -> Result<T, AppError>;
+    fn bad_request_msg(self, msg: &str) -> Result<T, AppError>;
+    fn unauthorized_msg(self, msg: &str) -> Result<T, AppError>;
+    fn captcha_msg(self, msg: &str) -> Result<T, AppError>;
+}
+
+impl<T> AppErrorOptionExt<T> for Option<T> {
+    fn not_found_msg(self, msg: &str) -> Result<T, AppError> {
+        self.ok_or_else(|| AppError::not_found(msg))
+    }
+    fn bad_request_msg(self, msg: &str) -> Result<T, AppError> {
+        self.ok_or_else(|| AppError::bad_request(msg))
+    }
+    fn unauthorized_msg(self, msg: &str) -> Result<T, AppError> {
+        self.ok_or_else(|| AppError::unauthorized(msg))
+    }
+    fn captcha_msg(self, msg: &str) -> Result<T, AppError> {
+        self.ok_or_else(|| AppError::captcha(msg))
+    }
+}
+
+pub trait AppErrorResultExt<T> {
+    fn into_bad_request(self) -> Result<T, AppError>;
+    fn into_not_found(self) -> Result<T, AppError>;
+    fn into_conflict(self) -> Result<T, AppError>;
+    fn into_unauthorized(self) -> Result<T, AppError>;
+    fn into_captcha(self) -> Result<T, AppError>;
+}
+
+impl<T, E> AppErrorResultExt<T> for Result<T, E>
+where
+    E: StdErrorExt,
+{
+    fn into_bad_request(self) -> Result<T, AppError> {
+        self.map_err(|e| AppError::bad_request_with_source(e.to_string(), None, e))
+    }
+    fn into_not_found(self) -> Result<T, AppError> {
+        self.map_err(|e| AppError::not_found_with_source(e.to_string(), None, e))
+    }
+    fn into_conflict(self) -> Result<T, AppError> {
+        self.map_err(|e| AppError::conflict_with_source(e.to_string(), None, e))
+    }
+    fn into_unauthorized(self) -> Result<T, AppError> {
+        self.map_err(|e| AppError::unauthorized_with_source(e.to_string(), None, e))
+    }
+    fn into_captcha(self) -> Result<T, AppError> {
+        self.map_err(|e| AppError::captcha_with_source(e.to_string(), None, e))
+    }
+}

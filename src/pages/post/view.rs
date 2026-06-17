@@ -87,7 +87,10 @@ pub async fn render(
         Cache::HIT.log(&ck);
 
         if content == NON_EXISTENT_KEY {
-            return Err(AppError::not_found(format!("post with slug {} not found", slug)).into());
+            Err(AppError::not_found(format!(
+                "post with slug {} not found",
+                slug
+            )))?;
         }
 
         let post_cache = PostCache::from_cache(&content);
