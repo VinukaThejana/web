@@ -42,6 +42,11 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+provider "aws" {
+  alias  = "ap_south_2"
+  region = "ap-southeast-2"
+}
+
 # --- IAM role (both regions can share this pattern) ---
 
 data "aws_iam_policy_document" "lambda_assume" {
@@ -117,6 +122,22 @@ resource "aws_lambda_function" "portfolio_eu" {
   }
 }
 
+resource "aws_lambda_function" "portfolio_ap_2" {
+  provider      = aws.ap_south_2
+  function_name = "portfolio"
+  role          = aws_iam_role.lambda_global.arn
+
+  filename         = "../target/lambda/portfolio/bootstrap.zip"
+  source_code_hash = filebase64sha256("../target/lambda/portfolio/bootstrap.zip")
+  handler          = "bootstrap"
+  runtime          = "provided.al2023"
+  architectures    = ["arm64"]
+
+  environment {
+    variables = local.env_vars
+  }
+}
+
 # --- Function URLs (replaces --enable-function-url flag) ---
 
 resource "aws_lambda_function_url" "portfolio_us" {
@@ -137,6 +158,13 @@ resource "aws_lambda_function_url" "portfolio_eu" {
   authorization_type = "NONE"
 }
 
+resource "aws_lambda_function_url" "portfolio_ap_2" {
+  provider           = aws.ap_south_2
+  function_name      = aws_lambda_function.portfolio_ap_2.function_name
+  authorization_type = "NONE"
+}
+
+
 # --- Outputs ---
 
 output "function_url_us" {
@@ -149,4 +177,8 @@ output "function_url_ap" {
 
 output "function_url_eu" {
   value = aws_lambda_function_url.portfolio_eu.function_url
+}
+
+output "function_url_ap_2" {
+  value = aws_lambda_function_url.portfolio_ap_2.function_url
 }

@@ -1,10 +1,10 @@
 use crate::{
-    config::ENV,
+    config::{ENV, state::AppState},
     error::{AppError, JsonError},
     model::cdn,
     util::IMG_EXTENSIONS,
 };
-use axum::{Json, response::IntoResponse};
+use axum::{Json, extract::State, response::IntoResponse};
 use serde_json::json;
 use sha1::{Digest, Sha1};
 use std::{
@@ -13,7 +13,10 @@ use std::{
 };
 use validator::Validate;
 
-pub async fn run(Json(payload): Json<cdn::Payload>) -> Result<impl IntoResponse, JsonError> {
+pub async fn run(
+    State(state): State<AppState>,
+    Json(payload): Json<cdn::Payload>,
+) -> Result<impl IntoResponse, JsonError> {
     payload.validate()?;
     if payload.password != (*ENV.admin_password) {
         return Err(AppError::unauthorized("password is incorrect").into());
@@ -68,8 +71,8 @@ pub async fn run(Json(payload): Json<cdn::Payload>) -> Result<impl IntoResponse,
         ("signature", signature),
     ];
 
-    let client = reqwest::Client::new();
-    let response = client
+    let response = state
+        .http()
         .post(format!(
             "https://api.cloudinary.com/v1_1/{}/image/upload",
             cloud_name

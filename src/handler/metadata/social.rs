@@ -1,5 +1,5 @@
 use crate::{
-    config::ENV,
+    config::{ENV, state::AppState},
     error::{AppError, JsonError},
     model::metadata::GetSocialMetadata,
     util::{
@@ -11,17 +11,17 @@ use crate::{
     },
 };
 use anyhow::Context;
-use axum::{Json, response::IntoResponse};
+use axum::{Json, extract::State, response::IntoResponse};
 use axum_extra::{
     TypedHeader,
     headers::{Authorization, authorization::Bearer},
 };
-use reqwest::redirect::Policy;
 use serde_json::json;
 use validator::Validate;
 
 pub async fn run(
     authorization: Option<TypedHeader<Authorization<Bearer>>>,
+    State(state): State<AppState>,
     Json(payload): Json<GetSocialMetadata>,
 ) -> Result<impl IntoResponse, JsonError> {
     if !matches!(
@@ -33,10 +33,7 @@ pub async fn run(
     payload.validate()?;
     let url = payload.url.trim();
 
-    let client = reqwest::Client::builder()
-        .redirect(Policy::none())
-        .build()
-        .context("failed to build reqwest client")?;
+    let client = state.http_no_redirect();
 
     let data = if url.contains("tiktok.com") || url.contains("vt.tiktok.com") {
         handle_tiktok(&client, url).await?
@@ -62,7 +59,7 @@ pub async fn run(
         handle_generic(&client, url).await?
     };
 
-    let description = llm::gemini(format!(
+    let description = llm::gemini(state.http(), format!(
         "You are a Senior Editor for a knowledge database. 
         Your job is to convert raw social media metadata into a **dense, high-value encyclopedia entry** (approx. 3 sentences).
 

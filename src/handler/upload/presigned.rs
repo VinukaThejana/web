@@ -32,7 +32,7 @@ pub async fn run(
         is_authorized = true;
     }
 
-    if !is_authorized && !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+    if !is_authorized && !cloudflare_verify(state.http(), &payload.cf_turnstile_response, &ip).await {
         return Err(AppError::captcha("captcha failed").into());
     }
 

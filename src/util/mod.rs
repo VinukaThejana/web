@@ -16,7 +16,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use governor::middleware::NoOpMiddleware;
 use hmac::{Hmac, KeyInit, Mac};
 use phf::phf_map;
-use reqwest::Client;
+
 use serde::{Deserialize, Deserializer};
 use serde_json::json;
 use sha2::Sha256;
@@ -171,8 +171,7 @@ pub fn escape_xml(input: &str) -> String {
         .replace('"', "&quot;")
 }
 
-pub async fn cloudflare_verify(token: &str, ip: &str) -> bool {
-    let client = Client::new();
+pub async fn cloudflare_verify(client: &reqwest::Client, token: &str, ip: &str) -> bool {
     let key = Ulid::new().to_string();
 
     let response = match client

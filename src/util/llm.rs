@@ -3,8 +3,12 @@ use anyhow::Context;
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 use serde_json::json;
 
-pub async fn gemini(prompt: impl Into<String>, model: Option<&str>) -> Result<String, AppError> {
-    let model = model.unwrap_or("gemini-2.0-flash-lite");
+pub async fn gemini(
+    client: &reqwest::Client,
+    prompt: impl Into<String>,
+    model: Option<&str>,
+) -> Result<String, AppError> {
+    let model = model.unwrap_or("gemini-3.1-flash-lite");
 
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -25,7 +29,6 @@ pub async fn gemini(prompt: impl Into<String>, model: Option<&str>) -> Result<St
     ]
     });
 
-    let client = reqwest::Client::new();
     let response = client
         .post(format!(
             "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",

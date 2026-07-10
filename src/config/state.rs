@@ -1,5 +1,6 @@
 use super::ENV;
 use redis::aio::MultiplexedConnection;
+use reqwest::redirect::Policy;
 use resend_rs::Resend;
 use std::{str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::OnceCell;
@@ -11,6 +12,8 @@ pub struct AppState {
     rd_conn: Arc<OnceCell<MultiplexedConnection>>,
     db: Arc<OnceCell<sqlx::PgPool>>,
     s3: Arc<OnceCell<aws_sdk_s3::Client>>,
+    http: reqwest::Client,
+    http_no_redirect: reqwest::Client,
 }
 
 impl AppState {
@@ -21,12 +24,20 @@ impl AppState {
             std::process::exit(1);
         });
 
+        let http = reqwest::Client::new();
+        let http_no_redirect = reqwest::Client::builder()
+            .redirect(Policy::none())
+            .build()
+            .expect("failed to build no-redirect reqwest client");
+
         Self {
             rs,
             rd,
             rd_conn: Arc::new(OnceCell::new()),
             db: Arc::new(OnceCell::new()),
             s3: Arc::new(OnceCell::new()),
+            http,
+            http_no_redirect,
         }
     }
 }
@@ -34,6 +45,14 @@ impl AppState {
 impl AppState {
     pub fn resend(&self) -> &Resend {
         &self.rs
+    }
+
+    pub fn http(&self) -> &reqwest::Client {
+        &self.http
+    }
+
+    pub fn http_no_redirect(&self) -> &reqwest::Client {
+        &self.http_no_redirect
     }
 
     pub async fn redis(&self) -> Result<MultiplexedConnection, redis::RedisError> {
@@ -55,7 +74,7 @@ impl AppState {
     pub async fn db(&self) -> &sqlx::PgPool {
         self.db
             .get_or_init(|| async {
-                let mut options = sqlx::postgres::PgConnectOptions::from_str(&*ENV.db_url)
+                let mut options = sqlx::postgres::PgConnectOptions::from_str(&ENV.db_url)
                     .unwrap_or_else(|e| {
                         log::error!("failed to parse database url: {:?}", e);
                         std::process::exit(1);

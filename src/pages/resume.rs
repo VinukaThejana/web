@@ -31,7 +31,7 @@ pub async fn render(State(state): State<AppState>) -> Result<impl IntoResponse, 
         id
     );
 
-    let client = reqwest::Client::new();
+    let client = state.http();
     let resp = client.get(&url).send().await?;
     if !resp.status().is_success() {
         return Err(AppError::not_found("page not found").into());

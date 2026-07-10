@@ -30,7 +30,7 @@ pub async fn run(
     State(state): State<AppState>,
     Form(payload): Form<SignUp>,
 ) -> Result<impl IntoResponse, HtmlError> {
-    if !cloudflare_verify(&payload.cf_turnstile_response, &ip).await {
+    if !cloudflare_verify(state.http(), &payload.cf_turnstile_response, &ip).await {
         return html::render(CaptchaFailed::default());
     }
 
