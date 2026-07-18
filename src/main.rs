@@ -5,13 +5,13 @@ use axum::{
 };
 use lambda_http::{Error, run};
 use portfolio::{
-    config::{ENV, log, state::AppState},
+    config::{log, state::AppState},
     handler,
     pages::{self},
     routes::{api, components},
 };
 use portfolio::{routes, util::governer_conf};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tower::ServiceBuilder;
 use tower_governor::GovernorLayer;
 use tower_http::{
@@ -74,7 +74,7 @@ async fn main() -> anyhow::Result<(), Error> {
             )
             .fallback_service(serve_dir);
 
-        let addr = format!("127.0.0.1:{}", ENV.port);
+        let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
         let listener = tokio::net::TcpListener::bind(&addr).await?;
         ::log::info!("listening on http://{}", addr);
 

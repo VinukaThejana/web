@@ -4,3 +4,4 @@
 .env.deployment
 .shuttle*
 Secrets*.toml
+.DS_Store
